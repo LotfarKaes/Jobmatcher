@@ -1,0 +1,71 @@
+
+/* ==========================================================================
+   STEP 1 — Foundation CSS (beginner)
+
+   Order to read:
+   1. :root        → variables (colors, fonts) — change once, use everywhere
+   2. Reset        → same starting point in every browser
+   3. body         → default text style
+   4. .container   → centered content column
+   5. .hero__*     → styles for the one section on the page
+
+   Next step (02): fixed navigation bar at the top.
+   ========================================================================== */
+
+:root {
+  --bg: #faf7f1;
+  --ink: #20302a;
+  --ink-soft: #5a695f;
+  --primary: #3e6b4f;
+  --font-body: "Segoe UI", Arial, sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ink);
+  background: var(--bg);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.container {
+  width: min(680px, 92%);
+  margin-inline: auto;
+}
+
+.hero__label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 0.75rem;
+}
+
+.hero__name {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 6vw, 3.2rem);
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+.hero__text {
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  max-width: 42ch;
+}
+
+.hero__text strong {
+  color: var(--primary);
+}
