@@ -30,9 +30,11 @@ One **Next.js** app holds both the website and the API. No separate Express serv
     - app/api/items       → list/save jobs (Supabase)
     - app/api/gemini      → AI (optional)
     - app/api/health      → “is it running?”
+    - app/login           → email + Google sign-in
+    - app/register        → full name, email, password
        |
        v
-  SUPABASE (+ GEMINI when configured)
+  SUPABASE Auth + Database (+ GEMINI when configured)
 ```
 
 - **One** command: `npm run dev`
@@ -51,14 +53,20 @@ my-app/
     page.tsx              ← home page
     layout.tsx            ← navbar, footer, SEO metadata
     globals.css
+    login/page.tsx        ← log in page
+    register/page.tsx     ← sign up page
+    auth/callback/        ← Google returns here
     api/
+      auth/register       ← POST email sign-up
+      auth/login          ← POST email log-in
+      auth/logout         ← POST sign out
       health/route.ts     ← GET  /api/health
       items/route.ts      ← GET, POST /api/items
       gemini/route.ts     ← POST /api/gemini
   components/
-    Navbar.tsx
+    Navbar.tsx, LoginForm, RegisterForm, GoogleSignInButton
   lib/
-    supabase.ts           ← database connection (server only)
+    supabase/             ← auth sessions + database
   .env.local.example      ← copy to .env.local
   package.json
   README.md               ← you are here
@@ -91,12 +99,62 @@ Edit `.env.local` (never commit it):
 ```env
 SUPABASE_URL=https://xxxx.supabase.co
 SUPABASE_ANON_KEY=eyJ...
+NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 GEMINI_API_KEY=...          # optional
 ```
 
+Use the **same** URL and anon key for the four Supabase lines. The `NEXT_PUBLIC_` ones are needed for login pages and Google in the browser (anon key is designed to be public).
+
+Never put `GEMINI_API_KEY` in `NEXT_PUBLIC_`.
+
 Restart `npm run dev` after changes.
 
-**Rule:** Do **not** prefix secrets with `NEXT_PUBLIC_`. Those would leak to the browser.
+---
+
+## Step 2b — User login (Supabase Auth)
+
+### Email register (browser)
+
+1. Open http://localhost:3000/register  
+2. Fill **full name**, **email**, **password**, **confirm password**  
+3. Or click **Sign up with Google**
+
+### Email register (Postman)
+
+`POST http://localhost:3000/api/auth/register`
+
+```json
+{
+  "fullName": "Alex Student",
+  "email": "alex@example.com",
+  "password": "mysecret12",
+  "confirmPassword": "mysecret12"
+}
+```
+
+### Email login (Postman)
+
+`POST http://localhost:3000/api/auth/login`
+
+```json
+{
+  "email": "alex@example.com",
+  "password": "mysecret12"
+}
+```
+
+### Google one-click
+
+In **Supabase Dashboard**:
+
+1. **Authentication → Providers → Google** → enable  
+2. Add **Google Cloud OAuth client ID and secret** (from Google Cloud Console)  
+3. **Authentication → URL Configuration** → add redirect URLs:
+   - `http://localhost:3000/auth/callback`
+   - `https://YOUR-VERCEL-APP.vercel.app/auth/callback`
+
+Then use **Log in with Google** on `/login` or `/register`.
 
 ---
 
@@ -149,6 +207,9 @@ Test with Postman:
 | What | Method | Path |
 |------|--------|------|
 | Health | GET | /api/health |
+| Register | POST | /api/auth/register |
+| Login | POST | /api/auth/login |
+| Logout | POST | /api/auth/logout |
 | List jobs | GET | /api/items |
 | Add job | POST | /api/items |
 | AI text | POST | /api/gemini |
