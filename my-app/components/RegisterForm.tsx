@@ -40,6 +40,7 @@ export function RegisterForm() {
     }
 
     setMessage(data.message ?? "Account created.");
+    window.dispatchEvent(new Event("jobmatcher:auth-changed"));
     router.refresh();
     setTimeout(() => router.push("/"), 1500);
   }

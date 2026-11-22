@@ -39,6 +39,7 @@ export function LoginForm() {
       return;
     }
 
+    window.dispatchEvent(new Event("jobmatcher:auth-changed"));
     router.refresh();
     router.push("/");
   }
