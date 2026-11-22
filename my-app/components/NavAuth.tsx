@@ -95,7 +95,10 @@ export function NavAuth() {
     (user.user_metadata?.full_name as string | undefined) ?? user.email;
 
   return (
-    <div className="flex items-center gap-3 text-sm">
+    <div className="flex items-center gap-3 text-sm font-medium">
+      <Link href="/dashboard" className="text-slate-600 hover:text-brand">
+        Dashboard
+      </Link>
       <span
         className="hidden max-w-[140px] truncate text-slate-600 sm:inline"
         title={user.email}
