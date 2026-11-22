@@ -1,10 +1,5 @@
 import Link from "next/link";
-
-const links = [
-  { href: "#home", label: "Home" },
-  { href: "#features", label: "Features" },
-  { href: "#dashboard", label: "Dashboard" },
-] as const;
+import { NavAuth } from "./NavAuth";
 
 export function Navbar() {
   return (
@@ -19,14 +14,18 @@ export function Navbar() {
         >
           Jobmatcher
         </Link>
-        <ul className="flex gap-6 text-sm font-medium text-slate-600">
-          {links.map(({ href, label }) => (
-            <li key={href}>
-              <a href={href} className="hover:text-brand transition-colors">
-                {label}
-              </a>
-            </li>
-          ))}
+        <ul className="flex flex-wrap items-center gap-4 sm:gap-6">
+          <li>
+            <Link
+              href="/"
+              className="text-sm font-medium text-slate-600 hover:text-brand transition-colors"
+            >
+              Home
+            </Link>
+          </li>
+          <li>
+            <NavAuth />
+          </li>
         </ul>
       </nav>
     </header>
