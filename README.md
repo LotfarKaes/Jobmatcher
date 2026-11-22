@@ -1,29 +1,35 @@
 # Jobmatcher
 
-Jobmatcher is a school team project. It helps people who look for jobs:
+Jobmatcher helps job seekers save time: track applications and (later) use AI to find jobs that fit your CV.
 
-- Use smart computer help (AI later) to find jobs that fit your CV.
-- Keep all your job applications in one place, like a tidy dashboard.
+## Where the code is
 
-## Where the real app lives
-
-The full website and API code is inside the folder:
+Everything runs from **one Next.js app**:
 
 **my-app/**
 
-That folder has two parts:
+- **Pages** — what you see (`app/page.tsx`, components)
+- **API** — server routes (`app/api/...`) for Supabase and Gemini
 
-- **frontend** — what you see in the browser (pages, buttons, colors).
-- **backend** — the helper on your computer that talks to the database and to AI.
+There is **no separate Express folder** anymore.
 
-## Start here
+## Read the guide
 
-Open this file and read it from top to bottom:
+Start here: **[my-app/README.md](my-app/README.md)**
 
-**my-app/README.md**
+It explains setup, folders, Supabase, Postman, and Vercel in simple steps.
 
-It explains the whole plan in simple words: folder structure, how everything connects, and step-by-step instructions for building the full project.
+## Quick start
 
-## Old starter file
+```powershell
+cd my-app
+npm install
+copy .env.local.example .env.local
+npm run dev
+```
 
-The files **index.html** and **style.css** in this folder were an early practice page. The new app uses **my-app/frontend** (Next.js) instead.
+Open http://localhost:3000 — API: http://localhost:3000/api/health
+
+## Old practice files
+
+**index.html** and **style.css** in this folder were an early HTML exercise. The real app is **my-app/**.

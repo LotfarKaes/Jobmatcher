@@ -1,6 +1,6 @@
 # Jobmatcher — full guide (simple English)
 
-Read this like a story. Each part builds on the last. You do not need to be a coding expert. Take one step at a time.
+One **Next.js** app holds both the website and the API. No separate Express server.
 
 ---
 
@@ -8,206 +8,101 @@ Read this like a story. Each part builds on the last. You do not need to be a co
 
 **Jobmatcher** helps job seekers:
 
-1. Find jobs that match their CV (resume) with help from AI when you turn it on.
-2. Track every application in one dashboard — from “I applied” to “I got hired.”
+1. Find jobs that match their CV with AI (when you add Gemini).
+2. Track applications in one dashboard.
 
-You are building a **full stack** app. That sounds fancy, but it only means three things work together:
-
-| Part | Simple name | What it does |
-|------|-------------|--------------|
-| **Frontend** | The face | Screens you click and read. Lives in the browser. |
-| **Backend** | The waiter | Takes orders from the frontend, runs safe logic, asks the database. |
-| **Database (Supabase)** | The memory box | Saves job applications and other data in the cloud. |
-
-**Gemini** (Google AI) is optional. The backend can send it a question when you add your API key. Never put that key on the frontend.
+| Part | Where it lives | What it does |
+|------|----------------|--------------|
+| **Pages (frontend)** | `app/page.tsx`, future dashboard pages | What users see |
+| **API (backend)** | `app/api/**/route.ts` | Talks to Supabase and Gemini on the server |
+| **Database** | Supabase in the cloud | Saves job applications |
 
 ---
 
-## How the architecture works
-
-Think of a restaurant:
-
-1. **You (user)** sit at the table — that is the **browser** and the **frontend**.
-2. You ask for something — for example “show my applications.”
-3. The **backend** walks to the kitchen and asks **Supabase** for the data.
-4. Supabase sends the list back. The backend passes it to the frontend.
-5. The frontend draws the list on the screen.
+## How it works (one box)
 
 ```
   YOU (browser)
        |
-       |  "Please give me my job list"
        v
-  FRONTEND (Next.js)  ---- talks to --->  BACKEND (Express)
-       |                                        |
-       |  shows pages                           |  reads/writes
-       |                                        v
-       |                                   SUPABASE (cloud database)
+  NEXT.JS (my-app)
+    - app/page.tsx        → home page
+    - app/api/items       → list/save jobs (Supabase)
+    - app/api/gemini      → AI (optional)
+    - app/api/health      → “is it running?”
        |
-       optional later: BACKEND ---> GEMINI (AI answers)
+       v
+  SUPABASE (+ GEMINI when configured)
 ```
 
-### Important rules
+- **One** command: `npm run dev`
+- **One** address locally: http://localhost:3000
+- **API** on the same site: http://localhost:3000/api/health
 
-- The frontend and backend are **two separate programs**. Each has its own `npm run dev`. One command does not start both.
-- On your laptop, the frontend often runs at **http://localhost:3000**.
-- The backend often runs at **http://localhost:4000**.
-- Secrets (Supabase keys, Gemini key) go in **backend `.env` only**. Do not paste them into the frontend unless the docs say it is safe (public anon key with Row Level Security is a special case — we keep it simple and use the backend first).
+**Vercel:** deploy **one** project. Preset **Next.js**. Root folder **`my-app`**.
 
-### What each folder is for
+---
+
+## Folder structure
 
 ```
 my-app/
-  frontend/                 ← Website (Next.js, React, TypeScript, Tailwind)
-    app/
-      layout.tsx            ← Wrapper for every page (title for Google, navbar, footer)
-      page.tsx              ← Home page
-      globals.css           ← Colors and base styles
-    components/
-      Navbar.tsx            ← Top menu
-    .env.local.example      ← Copy to .env.local (API address for the site)
-    package.json            ← Frontend tools list
-
-  backend/                  ← API server (Node.js, Express)
-    src/
-      server.ts             ← Starts the server and connects routes
-      routes/
-        health.ts           ← “Are you alive?” check
-        items.ts            ← List and add job applications (Supabase)
-        gemini.ts           ← AI text (needs GEMINI_API_KEY)
-      services/
-        supabase.ts         ← Connects to Supabase
-    .env.example            ← Copy to .env (keys and port)
-    package.json            ← Backend tools list
-
-  README.md                 ← You are here
-  .gitignore                ← Tells git not to upload node_modules and secrets
+  app/
+    page.tsx              ← home page
+    layout.tsx            ← navbar, footer, SEO metadata
+    globals.css
+    api/
+      health/route.ts     ← GET  /api/health
+      items/route.ts      ← GET, POST /api/items
+      gemini/route.ts     ← POST /api/gemini
+  components/
+    Navbar.tsx
+  lib/
+    supabase.ts           ← database connection (server only)
+  .env.local.example      ← copy to .env.local
+  package.json
+  README.md               ← you are here
 ```
 
 ---
 
-## What you need on your computer first
+## Step 1 — Install and run (local)
 
-1. **Node.js** (version 18 or newer is fine). Download from nodejs.org if you do not have it.
-2. **A code editor** (Cursor or VS Code).
-3. **Internet** — Supabase lives online.
-4. **A free Supabase account** — supabase.com (when you are ready for the database).
-5. **Optional:** Gemini API key from Google when you want AI.
-
-Check Node:
+Open PowerShell:
 
 ```powershell
-node -v
-npm -v
-```
-
-You should see version numbers, not an error.
-
----
-
-## Step-by-step: run the project on your laptop
-
-### Step 1 — Open the backend folder and install
-
-In PowerShell:
-
-```powershell
-cd "C:\Users\Ägaren\Desktop\my vision\FrontendLaxicon\Jobmatcher\my-app\backend"
+cd "path\to\Jobmatcher\my-app"
 npm install
-```
-
-(Use your real path if it is different.)
-
-### Step 2 — Make a secret settings file for the backend
-
-Copy the example file to a real `.env` file:
-
-```powershell
-copy .env.example .env
-```
-
-Open `.env` in your editor. You can leave Supabase and Gemini blank at first. Keep:
-
-```
-PORT=4000
-```
-
-### Step 3 — Start the backend
-
-```powershell
-npm run dev
-```
-
-Leave this window open. You should see a message that the API is listening on port **4000**.
-
-Test in the browser: **http://localhost:4000/api/health**
-
-You should see JSON with `"ok": true`. That means the backend works.
-
-### Step 4 — Open the frontend folder and install
-
-Open a **second** PowerShell window:
-
-```powershell
-cd "C:\Users\Ägaren\Desktop\my vision\FrontendLaxicon\Jobmatcher\my-app\frontend"
-npm install
-```
-
-### Step 5 — Tell the frontend where the backend lives
-
-```powershell
 copy .env.local.example .env.local
-```
-
-Inside `.env.local` you should have:
-
-```
-NEXT_PUBLIC_API_URL=http://localhost:4000
-```
-
-### Step 6 — Start the frontend
-
-```powershell
 npm run dev
 ```
 
-Open **http://localhost:3000** in your browser. You should see the Jobmatcher home page.
+- Website: http://localhost:3000  
+- Health check: http://localhost:3000/api/health  
 
-### Step 7 — Remember: two windows
-
-| Window | Folder | Command | Address |
-|--------|--------|---------|---------|
-| 1 | backend | npm run dev | http://localhost:4000 |
-| 2 | frontend | npm run dev | http://localhost:3000 |
-
-Stop a server with **Ctrl + C** in that window.
+You only need **one** terminal.
 
 ---
 
-## Step-by-step: connect live Supabase
+## Step 2 — Secrets (`.env.local`)
 
-Yes — your **local** backend can talk to your **real** Supabase project in the cloud. You do not need Supabase running on your PC.
+Edit `.env.local` (never commit it):
 
-### Step 1 — Create a Supabase project
+```env
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+GEMINI_API_KEY=...          # optional
+```
 
-1. Log in at supabase.com.
-2. Create a new project. Pick a name and password for the database.
-3. Wait until the project is ready.
+Restart `npm run dev` after changes.
 
-### Step 2 — Copy your keys
+**Rule:** Do **not** prefix secrets with `NEXT_PUBLIC_`. Those would leak to the browser.
 
-In Supabase: **Project Settings → API**
+---
 
-Copy:
+## Step 3 — Supabase table
 
-- **Project URL** → paste into `SUPABASE_URL` in `backend/.env`
-- **anon public** key → paste into `SUPABASE_ANON_KEY` in `backend/.env`
-
-Save the file. Restart the backend (`Ctrl+C`, then `npm run dev` again).
-
-### Step 3 — Create the table for applications
-
-In Supabase, open **SQL Editor**. Run this once:
+In Supabase → SQL Editor, run once:
 
 ```sql
 create table job_applications (
@@ -219,138 +114,73 @@ create table job_applications (
 );
 ```
 
-You can also add test rows in **Table Editor**.
+Test with Postman:
 
-### Step 4 — Test the API
-
-- **GET** http://localhost:4000/api/items — should return a list (maybe empty at first).
-- Use Postman, Thunder Client, or curl to **POST** JSON:
-
-```json
-{
-  "title": "Frontend Developer",
-  "company": "Example AB",
-  "status": "applied"
-}
-```
-
-to **http://localhost:4000/api/items**
-
-If you get errors about permissions, you may need **Row Level Security** policies in Supabase for your table. Ask a teacher or teammate, or learn “Supabase RLS for beginners.”
-
-### Step 5 — Show data on the website (your next coding task)
-
-The home page does not load the list yet. Full stack development means:
-
-1. Add a **Dashboard** page in `frontend/app/`.
-2. On that page, call `fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/items`)`.
-3. Show each job in a card or table.
-4. Add a small form that **POST**s a new job to the same API.
-5. Refresh the list after save.
-
-That is frontend + backend + database working together.
+- **GET** http://localhost:3000/api/items  
+- **POST** http://localhost:3000/api/items  
+  Body (JSON): `{ "title": "Developer", "company": "Example AB", "status": "applied" }`
 
 ---
 
-## Step-by-step: turn on Gemini (AI) later
+## Step 4 — Build features (team checklist)
 
-1. Get an API key from Google AI Studio (Gemini).
-2. Put it in `backend/.env`:
+### Phase A — Done
 
-   ```
-   GEMINI_API_KEY=your_key_here
-   ```
+- [x] One Next.js app (UI + API)
+- [x] `/api/health`, `/api/items`, `/api/gemini`
+- [x] Supabase helper in `lib/supabase.ts`
 
-3. Restart the backend.
-4. Send a POST to **http://localhost:4000/api/gemini** with body:
+### Phase B — Next
 
-   ```json
-   { "prompt": "Say hello in one sentence." }
-   ```
+- [ ] Dashboard page that `fetch("/api/items")` and shows a list
+- [ ] Form that POSTs a new application
+- [ ] Status updates (applied → interview → offer)
 
-5. Build a feature on the frontend that only calls this API (never the key itself). Example: “Paste your CV and we suggest job titles.”
+### Phase C — Later
 
----
-
-## Step-by-step: full stack development plan (whole project)
-
-Use this as a checklist for your team. Do the steps in order when you can.
-
-### Phase 1 — Foundation (you are mostly here)
-
-- [x] Split `frontend` and `backend` folders.
-- [x] Home page with team names and SEO basics.
-- [x] Health API works.
-- [ ] Everyone on the team can run two terminals and open localhost.
-
-### Phase 2 — Database and API
-
-- [ ] Supabase project live, table `job_applications` created.
-- [ ] GET and POST `/api/items` tested.
-- [ ] Dashboard page lists applications from the API.
-- [ ] Form to add a new application.
-- [ ] Edit status (applied, interview, offer, rejected) — new API route if needed.
-
-### Phase 3 — Users and safety (when you are ready)
-
-- [ ] Supabase Auth (sign up, log in).
-- [ ] Each user only sees their own rows (RLS policies).
-- [ ] Backend or Supabase rules so strangers cannot steal data.
-
-### Phase 4 — AI job matching
-
-- [ ] Upload or paste CV text on the frontend.
-- [ ] Backend sends safe prompt to Gemini.
-- [ ] Show suggested jobs or match score (store results in Supabase if you want history).
-
-### Phase 5 — Polish and SEO
-
-- [ ] One clear `h1` per page, good titles and descriptions.
-- [ ] Works on phone and desktop (Tailwind responsive classes).
-- [ ] Fast pages, no huge images without reason.
-
-### Phase 6 — Go live on the internet
-
-- [ ] Put code on GitHub (one repo is enough — frontend and backend folders together).
-- [ ] Deploy **frontend** to Vercel (root folder: `my-app/frontend`).
-- [ ] Deploy **backend** to a host that runs Node all the time (Render, Railway, etc.) **or** move APIs into Next.js later.
-- [ ] Set `NEXT_PUBLIC_API_URL` on Vercel to your live API URL (not localhost).
-- [ ] Put Supabase and Gemini keys in the hosting dashboard, not in git.
+- [ ] Supabase Auth (login)
+- [ ] Row Level Security so each user sees only their rows
+- [ ] CV paste → Gemini match on `/api/gemini`
 
 ---
 
-## API cheat sheet (for developers)
+## API cheat sheet
 
-| What | Method | URL | Notes |
-|------|--------|-----|--------|
-| Health check | GET | /api/health | Always try this first |
-| List applications | GET | /api/items | Needs Supabase |
-| Add application | POST | /api/items | JSON: title, company, status |
-| AI text | POST | /api/gemini | JSON: prompt — needs GEMINI_API_KEY |
+| What | Method | Path |
+|------|--------|------|
+| Health | GET | /api/health |
+| List jobs | GET | /api/items |
+| Add job | POST | /api/items |
+| AI text | POST | /api/gemini |
 
-Base URL local: `http://localhost:4000`
+Live: use your Vercel URL, e.g. `https://your-app.vercel.app/api/health`
 
 ---
 
-## Common problems (plain answers)
+## Deploy on Vercel
 
-**“npm is not recognized”**  
-Install Node.js and open a new terminal.
+1. Push code to GitHub (one repo is fine).
+2. Vercel → New Project → import repo.
+3. **Root Directory:** `my-app`
+4. **Framework:** Next.js (automatic)
+5. **Environment variables** (same names as `.env.local`):
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+   - `GEMINI_API_KEY` (optional)
+6. Deploy.
 
-**Home page works but API fails**  
-Is the backend window still running? Did you copy `.env` and `.env.local`?
+Postman works against `https://your-app.vercel.app/api/...`
 
-**Supabase says not configured**  
-Fill in `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `backend/.env` and restart.
+---
 
-**Empty list but no error**  
-The table might be empty. Add a row in Supabase or POST from the API.
+## Common problems
 
-**CORS errors in the browser**  
-The backend allows browser calls in dev. If you deploy, set CORS to your real website URL.
-
-**One repo or two for Git and Vercel?**  
-One Git repo is fine. Vercel usually hosts the **frontend** folder first. The Express backend often needs its own host unless you move APIs into Next.js.
+| Problem | Fix |
+|---------|-----|
+| 503 Supabase not configured | Fill `.env.local` and restart dev server |
+| 503 Gemini not configured | Add `GEMINI_API_KEY` or ignore until you need AI |
+| Empty items list | Table empty or RLS blocking — check Supabase |
+| Still opening port 4000 | Old setup — API is now on port **3000** under `/api` |
 
 ---
 
@@ -360,12 +190,8 @@ Lotfar Kaes, Gustav Jeppsson, Andreas Rimheden, Anastasiya Lakhmakova, Marina Si
 
 ---
 
-## Short summary
+## Summary
 
-1. **Frontend** = what users see. Run in `frontend` with `npm run dev` → port 3000.  
-2. **Backend** = brain that talks to Supabase and Gemini. Run in `backend` with `npm run dev` → port 4000.  
-3. **Supabase** = saves data in the cloud; local backend can use the live project.  
-4. Build in phases: run locally → database → dashboard → users → AI → deploy.  
-5. Read this file again whenever someone new joins the team.
-
-Good luck. One step at a time.
+- **One Next.js project** = pages + API.  
+- **No `frontend/` / `backend/` split** anymore.  
+- **Vercel:** one Next.js deploy, root `my-app`.

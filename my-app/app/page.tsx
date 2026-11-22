@@ -1,5 +1,3 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
-
 export default function HomePage() {
   return (
     <main className="flex-1">
@@ -36,22 +34,32 @@ export default function HomePage() {
             ))}
           </ul>
         </article>
-        <ApiStatusHint apiUrl={API_URL} />
+        <ApiHints />
       </section>
     </main>
   );
 }
 
-/** Shows where the frontend expects the backend — useful during local setup. */
-function ApiStatusHint({ apiUrl }: { apiUrl: string }) {
+/** Pages and API share the same Next.js app — one `npm run dev`. */
+function ApiHints() {
+  const routes = ["/api/health", "/api/items", "/api/gemini"];
   return (
-    <p className="mt-8 text-sm text-slate-500">
-      API base:{" "}
-      <code className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-700">
-        {apiUrl}
-      </code>
-      {" "}
-      — configure in <code className="text-slate-600">.env.local</code>
-    </p>
+    <div className="mt-8 text-sm text-slate-500">
+      <p>
+        API routes (Postman or browser):{" "}
+        {routes.map((path) => (
+          <code
+            key={path}
+            className="mr-2 rounded bg-slate-100 px-1.5 py-0.5 text-slate-700"
+          >
+            {path}
+          </code>
+        ))}
+      </p>
+      <p className="mt-2">
+        Secrets go in <code className="text-slate-600">.env.local</code> (see{" "}
+        <code className="text-slate-600">.env.local.example</code>).
+      </p>
+    </div>
   );
 }
