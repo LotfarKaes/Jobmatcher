@@ -1,0 +1,19 @@
+{
+  "_note": "Hand-written sample in the shape of a JobTech JobSearch ad, NOT a captured API response. Replace with a real /ad/{id} response once the API is reachable.",
+  "id": "29012345",
+  "headline": "  Backend-utvecklare C# / .NET  ",
+  "webpage_url": "https://arbetsformedlingen.se/platsbanken/annonser/29012345",
+  "publication_date": "2026-11-18T09:30:00",
+  "application_deadline": "2026-12-15T23:59:59",
+  "salary_description": "Fast månadslön",
+  "employer": { "name": "Exempel AB", "workplace": "Exempel Göteborg" },
+  "workplace_address": { "municipality": "Göteborg", "city": null, "region": "Västra Götalands län", "country": "Sverige" },
+  "description": {
+    "text": "Vi söker en utvecklare.\r\n\r\n\r\nDu har erfarenhet av C# &amp; .NET.",
+    "text_formatted": "<p>Vi söker en utvecklare.</p>"
+  },
+  "application_details": { "url": "https://exempel.se/jobb/123" },
+  "must_have": { "skills": [{ "label": "C#" }, { "label": ".NET" }] },
+  "nice_to_have": { "skills": [{ "label": "C#" }, { "label": "PostgreSQL" }] },
+  "some_new_field_we_ignore": true
+}
