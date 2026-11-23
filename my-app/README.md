@@ -2,6 +2,8 @@
 
 One **Next.js** app holds both the website and the API. No separate Express server.
 
+**For group members learning how everything was built**, read **[GROUP_GUIDE.md](./GROUP_GUIDE.md)** (step-by-step, presentation-friendly).
+
 ---
 
 ## What is this project?
