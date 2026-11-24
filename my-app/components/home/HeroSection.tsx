@@ -20,7 +20,7 @@ export function HeroSection() {
       <div className="relative mx-auto max-w-6xl px-4">
         <motion.div
           className="mx-auto max-w-3xl text-center lg:mx-0 lg:text-left"
-          initial={reduceMotion ? false : "hidden"}
+          initial={false}
           animate={reduceMotion ? undefined : "visible"}
           variants={{
             hidden: {},

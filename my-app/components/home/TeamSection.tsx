@@ -27,7 +27,7 @@ export function TeamSection() {
             Built at <span className="text-accent">Laxicon</span>
           </h2>
           <p className="mt-4 text-lg text-white/65">
-            Lotfar, Gustav, Andreas, Anastasiya, and Marina—one Next.js codebase for
+            Lotfar, Gustav, Andreas, and Marina—one Next.js codebase for
             pages, APIs, and Supabase.
           </p>
         </FadeIn>

@@ -2,7 +2,6 @@ export const TEAM_MEMBERS = [
   "Lotfar Kaes",
   "Gustav Jeppsson",
   "Andreas Rimheden",
-  "Anastasiya Lakhmakova",
   "Marina Silakova",
 ] as const;
 

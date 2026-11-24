@@ -1,6 +1,6 @@
 # Jobmatcher — group guide (how we built it)
 
-Hi team. This document is for **Lotfar, Gustav, Andreas, Anastasiya, Marina**, and anyone new on the project.
+Hi team. This document is for **Lotfar, Gustav, Andreas, Marina**, and anyone new on the project.
 
 It explains **what we have today**, **how it works**, and **how we can keep building**. The words are simple on purpose — you do not need to be a senior developer to follow along.
 
@@ -92,6 +92,8 @@ my-app/
     TeamSection.tsx         → Team cards with initials
     CtaSection.tsx          → Final signup prompt
     DevApiNote.tsx          → API paths for developers
+    HomePageLoader.tsx      → “Drop CV” + match % animation (loading screen)
+    HomePageShell.tsx       → Shows loader, then fades in the home page
     FadeIn.tsx + motion.ts  → Shared animation helpers
 
   lib/home/
@@ -118,7 +120,22 @@ Login still uses Supabase the same way as before (sections 7–8 below); only th
 
 **No change** to API routes or Supabase logic.
 
-### Step 8 — Run and check on your laptop
+### Step 8 — Home page loader (why it exists)
+
+**Problem:** On first visit, the home page is mostly **client-side** (Framer Motion). For a moment you could see only the **dark blue background** with no text — confusing for users.
+
+**Fix (two small files):**
+
+1. **`HomePageLoader.tsx`** — Full-screen animation: **“Drop CV”**, a CV card falls into a zone, the **match %** counts up (about 62 → 95), and a progress bar fills. Uses the same dark / yellow style as the site.
+2. **`HomePageShell.tsx`** — Wraps the home page in **`app/page.tsx`**. On load it shows the loader for ~1.6 seconds (shorter if the user prefers reduced motion), then **fades in** the real sections.
+
+**Important:**
+
+- The loader runs **only on `/`** (home). Login and register are **not** affected.
+- To change how long it shows, edit **`LOAD_MS`** in `HomePageShell.tsx`.
+- This is **visual only** — it does not upload a CV or call the AI; it just explains what Jobmatcher does while the page gets ready.
+
+### Step 9 — Run and check on your laptop
 
 ```powershell
 cd my-app
@@ -137,7 +154,7 @@ To confirm the app still builds for deploy:
 npm run build
 ```
 
-### Step 9 — What is demo vs real (important)
+### Step 10 — What is demo vs real (important)
 
 | On the home page | Real or demo? |
 |------------------|---------------|
@@ -148,12 +165,13 @@ npm run build
 
 Next team task can be: save real jobs from `/api/items` on the dashboard and wire CV upload to Gemini.
 
-### Step 10 — Who edits what (quick split)
+### Step 11 — Who edits what (quick split)
 
 | Task | Suggested owner |
 |------|-----------------|
 | Text, team list, demo jobs | Edit `lib/home/content.ts` |
 | Layout / new section | New file in `components/home/`, import in `page.tsx` |
+| Loader timing / text | `HomePageShell.tsx`, `HomePageLoader.tsx` |
 | Colors | `tailwind.config.ts` + `globals.css` |
 | Auth bugs | `lib/supabase/` + auth API routes (unchanged by home page) |
 
@@ -456,6 +474,7 @@ npm run dev
 
 - Single Next.js app structure
 - Modern home page (dark blue / white / yellow, Framer Motion, `components/home/`) — see **section 2**
+- Home page loader (CV drop + match % while content appears) — **section 2, step 8**
 - Home page + SEO layout
 - Email register (full name, email, password, confirm)
 - Email login
