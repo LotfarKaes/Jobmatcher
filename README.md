@@ -13,11 +13,10 @@ Everything runs from **one Next.js app**:
 
 There is **no separate Express folder** anymore.
 
-## Read the guide
+## Read the guides
 
-Start here: **[my-app/README.md](my-app/README.md)**
-
-It explains setup, folders, Supabase, Postman, and Vercel in simple steps.
+- **Setup & commands:** **[my-app/README.md](my-app/README.md)**
+- **How it works (for the team / presentation):** **[my-app/GROUP_GUIDE.md](my-app/GROUP_GUIDE.md)** — simple English, full explanation of login, dashboard, APIs, and Supabase
 
 ## Quick start
 

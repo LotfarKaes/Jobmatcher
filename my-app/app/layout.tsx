@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import "./globals.css";
+
+const fontSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -25,10 +32,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col">
+      <body className={`${fontSans.variable} min-h-screen flex flex-col font-sans`}>
         <Navbar />
         {children}
-        <footer className="border-t border-slate-200 bg-white py-8 mt-auto">
+        <footer className="mt-auto border-t border-white/10 bg-midnight-surface/90 py-10 backdrop-blur">
           <SiteFooter />
         </footer>
       </body>
@@ -38,8 +45,11 @@ export default function RootLayout({
 
 function SiteFooter() {
   return (
-    <div className="mx-auto max-w-5xl px-4 text-center text-sm text-slate-600">
-      <p>© {new Date().getFullYear()} Jobmatcher. Built for organized job search.</p>
+    <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 text-center text-sm text-white/60 sm:flex-row sm:justify-between">
+      <p className="font-semibold text-white">
+        Job<span className="text-accent">matcher</span>
+      </p>
+      <p>© {new Date().getFullYear()} Built for organized job search — Laxicon team.</p>
     </div>
   );
 }

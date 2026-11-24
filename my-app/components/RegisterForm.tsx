@@ -46,9 +46,9 @@ export function RegisterForm() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md">
-      <h1 className="text-2xl font-bold text-slate-900">Create account</h1>
-      <p className="mt-2 text-sm text-slate-600">
+    <div className="glass-panel mx-auto w-full max-w-md rounded-2xl p-8 shadow-card">
+      <h1 className="text-2xl font-bold text-white">Create account</h1>
+      <p className="mt-2 text-sm text-white/65">
         Register with email or use Google in one click.
       </p>
 
@@ -56,9 +56,9 @@ export function RegisterForm() {
         <GoogleSignInButton label="Sign up with Google" />
 
         <div className="flex items-center gap-3">
-          <div className="h-px flex-1 bg-slate-200" />
-          <span className="text-xs text-slate-500">or email</span>
-          <div className="h-px flex-1 bg-slate-200" />
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="text-xs text-white/45">or email</span>
+          <div className="h-px flex-1 bg-white/10" />
         </div>
       </div>
 
@@ -83,12 +83,12 @@ export function RegisterForm() {
         />
 
         {error && (
-          <p className="text-sm text-red-600" role="alert">
+          <p className="text-sm text-red-400" role="alert">
             {error}
           </p>
         )}
         {message && (
-          <p className="text-sm text-brand-dark" role="status">
+          <p className="text-sm text-accent" role="status">
             {message}
           </p>
         )}
@@ -96,15 +96,15 @@ export function RegisterForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+          className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-midnight hover:bg-accent-bright disabled:opacity-60"
         >
           {loading ? "Creating account…" : "Register"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-slate-600">
+      <p className="mt-6 text-center text-sm text-white/60">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-brand hover:underline">
+        <Link href="/login" className="font-medium text-accent hover:underline">
           Log in
         </Link>
       </p>
@@ -130,7 +130,7 @@ function Field({
   const id = name;
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-slate-700">
+      <label htmlFor={id} className="block text-sm font-medium text-white/80">
         {label}
       </label>
       <input
@@ -140,7 +140,7 @@ function Field({
         autoComplete={autoComplete}
         required={required}
         minLength={minLength}
-        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+        className="mt-1 w-full rounded-lg border border-white/15 bg-midnight px-3 py-2 text-white shadow-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
       />
     </div>
   );

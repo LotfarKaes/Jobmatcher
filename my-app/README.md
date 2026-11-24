@@ -2,6 +2,8 @@
 
 One **Next.js** app holds both the website and the API. No separate Express server.
 
+**For group members learning how everything was built**, read **[GROUP_GUIDE.md](./GROUP_GUIDE.md)** (step-by-step, presentation-friendly).
+
 ---
 
 ## What is this project?
@@ -247,7 +249,7 @@ Postman works against `https://your-app.vercel.app/api/...`
 
 ## Team
 
-Lotfar Kaes, Gustav Jeppsson, Andreas Rimheden, Anastasiya Lakhmakova, Marina Silakova.
+Lotfar Kaes, Gustav Jeppsson, Andreas Rimheden, Marina Silakova.
 
 ---
 

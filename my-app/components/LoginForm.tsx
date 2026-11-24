@@ -45,24 +45,24 @@ export function LoginForm() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md">
-      <h1 className="text-2xl font-bold text-slate-900">Log in</h1>
-      <p className="mt-2 text-sm text-slate-600">
+    <div className="glass-panel mx-auto w-full max-w-md rounded-2xl p-8 shadow-card">
+      <h1 className="text-2xl font-bold text-white">Log in</h1>
+      <p className="mt-2 text-sm text-white/65">
         Email and password, or one click with Google.
       </p>
 
       <div className="mt-6 space-y-4">
         <GoogleSignInButton label="Log in with Google" />
         <div className="flex items-center gap-3">
-          <div className="h-px flex-1 bg-slate-200" />
-          <span className="text-xs text-slate-500">or email</span>
-          <div className="h-px flex-1 bg-slate-200" />
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="text-xs text-white/45">or email</span>
+          <div className="h-px flex-1 bg-white/10" />
         </div>
       </div>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+          <label htmlFor="email" className="block text-sm font-medium text-white/80">
             Email
           </label>
           <input
@@ -71,11 +71,11 @@ export function LoginForm() {
             type="email"
             autoComplete="email"
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+            className="mt-1 w-full rounded-lg border border-white/15 bg-midnight px-3 py-2 text-white shadow-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+          <label htmlFor="password" className="block text-sm font-medium text-white/80">
             Password
           </label>
           <input
@@ -84,12 +84,12 @@ export function LoginForm() {
             type="password"
             autoComplete="current-password"
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+            className="mt-1 w-full rounded-lg border border-white/15 bg-midnight px-3 py-2 text-white shadow-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
 
         {error && (
-          <p className="text-sm text-red-600" role="alert">
+          <p className="text-sm text-red-400" role="alert">
             {error}
           </p>
         )}
@@ -97,15 +97,15 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+          className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-midnight hover:bg-accent-bright disabled:opacity-60"
         >
           {loading ? "Signing in…" : "Log in"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-slate-600">
+      <p className="mt-6 text-center text-sm text-white/60">
         No account yet?{" "}
-        <Link href="/register" className="font-medium text-brand hover:underline">
+        <Link href="/register" className="font-medium text-accent hover:underline">
           Register
         </Link>
       </p>
