@@ -177,6 +177,84 @@ Next team task can be: save real jobs from `/api/items` on the dashboard and wir
 
 ---
 
+## 2b. Job fetcher backend (CARD-03, Gustav)
+
+**Date:** 24 November 2026 (branch `gustav`)  
+**Goal:** Let users find real jobs and save them, so match score, cover letter and the tracker have real job ads to work with.
+
+This is **backend only**: three API routes plus one Supabase table. Lotfar builds the job search UI and calls these routes. Full details and copy-paste examples are in **`lib/jobs/README.md`**.
+
+### Where jobs come from
+
+| Source | How it works |
+|--------|--------------|
+| **JobTech JobSearch API** (Arbetsförmedlingen) | Free and official, no API key needed. We search it and fetch single ads by id. |
+| **Platsbanken link** | User pastes `arbetsformedlingen.se/platsbanken/annonser/<id>`; we read the id and fetch that ad from JobTech. |
+| **Paste text** | User pastes a job ad by hand (title, company, description). Works for any site. |
+
+We do **not** scrape LinkedIn, Indeed or Glassdoor. They need login and forbid scraping, and it breaks easily. If a user pastes such a link, the API answers with `LOGIN_REQUIRED` so the UI can say "paste the text instead".
+
+### The three routes
+
+| Method | Path | What it does | Login? |
+|--------|------|--------------|--------|
+| GET | `/api/jobs/search?q=react` | Searches JobTech. Also `municipality`, `remote`, `offset`, `limit`. Nothing is saved. | No |
+| POST | `/api/jobs/import` | Body `{ "url": "..." }`. Returns a preview of one job. Nothing is saved. | No |
+| POST | `/api/jobs` | Saves a job: `{ "source": "jobtech", "externalId": "123" }` or `{ "source": "manual", "title", "description", ... }` | **Yes** |
+
+Every job comes back in the **same shape** (`NormalizedJob` in `lib/jobs/types.ts`): title, company, location, remote, description (plain text, HTML removed), skills, salary, links, dates. The UI never has to care where a job came from.
+
+Errors use the same `{ error: "message" }` shape as the rest of the app, plus a `code` such as `INVALID_INPUT`, `UNAUTHORIZED`, `NOT_FOUND` or `UPSTREAM_ERROR`. The `error` text is written so it can be shown to users.
+
+### Files
+
+```
+my-app/
+  app/api/jobs/
+    search/route.ts      → GET /api/jobs/search
+    import/route.ts      → POST /api/jobs/import
+    route.ts             → POST /api/jobs (save)
+  lib/jobs/
+    types.ts             → NormalizedJob + input checks (zod)
+    jobtech.ts           → JobTech client (search, get one ad)
+    url.ts               → Recognises Platsbanken / LinkedIn / other links
+    clean.ts             → Turns ad HTML into plain text
+    save.ts              → Body check + row mapping for saving
+    http.ts              → Shared error responses
+    *.test.ts            → Tests (Vitest)
+    jobtech.http         → Manual requests for the VS Code / Rider HTTP client
+    README.md            → Examples (fetch, curl, PowerShell)
+  supabase/jobs.sql      → Creates the jobs table
+```
+
+### The `jobs` table
+
+`supabase/jobs.sql` creates a `jobs` table with **Row Level Security**:
+
+- Any logged-in user can read **JobTech** jobs (they are public ads anyway).
+- A **manually pasted** job is visible only to the user who saved it.
+- Users can only insert rows as themselves.
+- The same JobTech ad is stored only once (`unique (source, external_id)`); saving it again returns the existing row.
+
+**To do:** someone with access must run `supabase/jobs.sql` once in the Supabase **SQL Editor** (see section 10). Until then, `POST /api/jobs` returns `DB_ERROR`.
+
+### Tests
+
+```powershell
+cd my-app
+npm test            # 43 tests, no network needed (uses saved JobTech responses)
+npm run typecheck   # TypeScript check without building
+```
+
+### What the UI should do (for Lotfar)
+
+1. Search box → `GET /api/jobs/search` → show `items` as cards.
+2. "Paste link" → `POST /api/jobs/import` → show the preview.
+3. "Paste text" → a small form → `POST /api/jobs` with `source: "manual"`.
+4. "Save" on a card → `POST /api/jobs` with `source: "jobtech"` and the job's `externalId`.
+
+---
+
 ## 3. One app, not two servers
 
 We used to think about a separate “frontend folder” and “backend folder.”  
@@ -232,6 +310,7 @@ my-app/
       health/route.ts        → GET /api/health  — “is the server alive?”
       items/route.ts         → GET/POST /api/items — job applications table
       gemini/route.ts        → POST /api/gemini — AI text (needs key)
+      jobs/                  → Job fetcher (search, import, save) — see section 2b
       auth/
         register/route.ts    → POST sign up with email
         login/route.ts       → POST sign in with email
@@ -247,6 +326,11 @@ my-app/
 
   lib/home/
     content.ts               → Team names, demo jobs, feature text (easy to edit)
+
+  lib/jobs/                  → JobTech client, job shape, tests — see section 2b
+
+  supabase/
+    jobs.sql                 → Creates the jobs table (run once in Supabase)
 
   lib/supabase/
     env.ts                   → Reads SUPABASE_URL and keys from .env.local
@@ -357,6 +441,9 @@ All APIs start with **http://localhost:3000** when you run `npm run dev`.
 | GET | `/api/items` | List rows from `job_applications` in Supabase |
 | POST | `/api/items` | Body: title, company, status |
 | POST | `/api/gemini` | Body: prompt (needs GEMINI_API_KEY) |
+| GET | `/api/jobs/search` | Query: q, municipality, remote, offset, limit (see section 2b) |
+| POST | `/api/jobs/import` | Body: url (Platsbanken link) → job preview |
+| POST | `/api/jobs` | Save a job (needs login) |
 
 ### Health
 
@@ -398,6 +485,8 @@ create table job_applications (
 );
 ```
 
+   And for the job fetcher: paste and run **`supabase/jobs.sql`** (creates `jobs` + RLS rules, see section 2b).
+
 4. **Authentication → Providers**
    - **Email** on (for manual register).
    - **Google** on + Client ID/Secret from Google Cloud Console.
@@ -418,6 +507,7 @@ After editing `.env.local`, always **restart** `npm run dev`.
 | `SUPABASE_URL` | Database + auth |
 | `SUPABASE_ANON_KEY` | Safe public key with Supabase rules (RLS) |
 | `GEMINI_API_KEY` | Optional AI |
+| `JOBTECH_API_KEY` | Optional. JobTech works without a key today |
 
 `next.config.ts` copies Supabase values so the browser can log in without duplicating `NEXT_PUBLIC_*` lines.
 
@@ -440,6 +530,10 @@ After editing `.env.local`, always **restart** `npm run dev`.
 | **OAuth** | “Log in with Google” — Google checks password, we get a yes/no token |
 | **Session** | Proof you are logged in (stored in cookies) |
 | **Vercel** | Website host for Next.js (production) |
+| **JobTech** | Arbetsförmedlingen's free job ad API (the same ads as Platsbanken) |
+| **zod** | Checks that incoming JSON / query strings have the right shape |
+| **Vitest** | Test runner (`npm test`) |
+| **RLS** | Row Level Security — Supabase rules for who can read or write each row |
 
 ---
 
@@ -482,6 +576,7 @@ npm run dev
 - Protected dashboard with welcome text
 - Navbar auth state (login/logout without manual refresh)
 - APIs: health, items, gemini, auth
+- Job fetcher backend: JobTech search, Platsbanken link import, paste text, save to `jobs` (**section 2b**, branch `gustav`)
 - Supabase connection pattern
 - README + this group guide
 
@@ -491,6 +586,8 @@ npm run dev
 - Form to add a new application on dashboard
 - Link each row to a logged-in user (`user_id` + RLS in Supabase)
 - CV upload / paste → Gemini match
+- Job search UI on top of `/api/jobs/*` (Lotfar)
+- Run `supabase/jobs.sql` in our Supabase project
 - Status pills: applied → interview → offer
 
 ---
