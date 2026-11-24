@@ -30,7 +30,7 @@ export function GoogleSignInButton({
     <button
       type="button"
       onClick={handleGoogle}
-      className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition hover:bg-slate-50"
+      className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-midnight px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:border-accent/40 hover:bg-white/5"
     >
       <GoogleIcon />
       {label}

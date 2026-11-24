@@ -22,10 +22,144 @@ Right now we have:
 - A **private dashboard** after login.
 - **API endpoints** for health checks, job list (database), and AI (ready but optional).
 - Connection to **Supabase** (online database + user accounts).
+- A **modern marketing home page** (dark blue, white and yellow text, animations) — see section 2.
 
 ---
 
-## 2. One app, not two servers
+## 2. Today's work — modern home page (step by step)
+
+**Date:** 24 November 2026  
+**Goal:** Build a beautiful public home page that matches a job-matcher style UX (like Google Stitch job-search designs): resume upload, match scores, and a tracker board — using our existing **Next.js + Tailwind** app.
+
+Anyone on the team can follow these steps to understand what changed and how to run it.
+
+### Step 1 — What we wanted
+
+1. Keep **one app** in `my-app/` (no new folder).
+2. Split the home page into **small React components** (easier to edit in a group).
+3. Use **dark blue** background, **white** text for reading, **yellow** for highlights (scores, buttons, badges).
+4. Add **motion** (gentle animations when you scroll or load the page).
+5. Keep the real **team names** and **project story** from section 1.
+
+We used a **Stitch preview link** as design inspiration. The preview often loads only inside Google’s iframe, so we built a standard job-matcher layout: hero → upload CV → job cards with **% fit** → features → steps → team → call-to-action.
+
+### Step 2 — Install one new package (motion)
+
+In PowerShell, from the project folder:
+
+```powershell
+cd my-app
+npm install framer-motion
+```
+
+**Framer Motion** is a library for React that moves elements smoothly (fade in, float, stagger cards). The home page components mark `"use client"` because animations run in the browser.
+
+### Step 3 — Colors and global style
+
+| File | What we did |
+|------|-------------|
+| `tailwind.config.ts` | Added `midnight` (dark blues), `accent` (yellow), `brand` (blue buttons) |
+| `app/globals.css` | Dark mesh background + `.glass-panel` (frosted cards) |
+| `app/layout.tsx` | **Plus Jakarta Sans** font, dark footer |
+
+The whole site now shares the same dark theme so the **navbar** and **login/register** cards look consistent.
+
+### Step 4 — Home page = one file that imports sections
+
+**File:** `app/page.tsx`
+
+It only **lists sections in order** (no long HTML in one place):
+
+1. `HeroSection` — headline, buttons, stats  
+2. `JobMatchesSection` — demo job cards with yellow fit %  
+3. `FeaturesSection` — three feature cards  
+4. `HowItWorksSection` — upload → match → track  
+5. `TeamSection` — your five names  
+6. `CtaSection` — yellow “Create account” banner  
+7. `DevApiNote` — small hint for `/api/health`, etc.
+
+### Step 5 — Where the components live
+
+```
+my-app/
+  components/home/
+    HeroSection.tsx         → Top of page + links to /register and /login
+    ResumeUploadCard.tsx    → “Upload resume” + search (demo UI for later AI)
+    DashboardPreview.tsx    → Animated kanban: Applied / Interview / Offer
+    JobMatchesSection.tsx   → Three sample jobs with match scores
+    FeaturesSection.tsx     → AI matching, tracker, skills gap
+    HowItWorksSection.tsx   → Steps 01–03
+    TeamSection.tsx         → Team cards with initials
+    CtaSection.tsx          → Final signup prompt
+    DevApiNote.tsx          → API paths for developers
+    FadeIn.tsx + motion.ts  → Shared animation helpers
+
+  lib/home/
+    content.ts              → Team names, features, jobs (edit text HERE)
+```
+
+**Tip for the team:** Change wording or demo jobs in **`lib/home/content.ts`** first — you usually do not need to touch animation files.
+
+### Step 6 — Navbar and auth menu
+
+| File | Change |
+|------|--------|
+| `components/Navbar.tsx` | Dark bar, links: Home, Matches, Features, Team |
+| `components/NavAuth.tsx` | Yellow **Register** button, white **Log in** link |
+
+Login still uses Supabase the same way as before (sections 7–8 below); only the **look** changed.
+
+### Step 7 — Login and register (visual only)
+
+| File | Change |
+|------|--------|
+| `LoginForm.tsx`, `RegisterForm.tsx` | Glass card, dark inputs, yellow submit button |
+| `GoogleSignInButton.tsx` | Dark outline style |
+
+**No change** to API routes or Supabase logic.
+
+### Step 8 — Run and check on your laptop
+
+```powershell
+cd my-app
+npm run dev
+```
+
+Open **http://localhost:3000** and scroll the home page:
+
+- Yellow accents on scores and main buttons  
+- Resume upload box and floating board preview  
+- Team section with your names  
+
+To confirm the app still builds for deploy:
+
+```powershell
+npm run build
+```
+
+### Step 9 — What is demo vs real (important)
+
+| On the home page | Real or demo? |
+|------------------|---------------|
+| Job cards and % match | **Demo** — static data in `content.ts` |
+| Resume drag-and-drop | **Demo** — links to `/register`; no file upload yet |
+| Log in / Register / Dashboard | **Real** — Supabase auth (already built) |
+| `/api/items`, `/api/gemini` | **Real APIs** — connect to dashboard in a later sprint |
+
+Next team task can be: save real jobs from `/api/items` on the dashboard and wire CV upload to Gemini.
+
+### Step 10 — Who edits what (quick split)
+
+| Task | Suggested owner |
+|------|-----------------|
+| Text, team list, demo jobs | Edit `lib/home/content.ts` |
+| Layout / new section | New file in `components/home/`, import in `page.tsx` |
+| Colors | `tailwind.config.ts` + `globals.css` |
+| Auth bugs | `lib/supabase/` + auth API routes (unchanged by home page) |
+
+---
+
+## 3. One app, not two servers
 
 We used to think about a separate “frontend folder” and “backend folder.”  
 Now everything lives in **one Next.js app** inside **`my-app/`**.
@@ -43,7 +177,7 @@ You run **one command**: `npm run dev` → open **http://localhost:3000**.
 
 ---
 
-## 3. How a request travels (the big picture)
+## 4. How a request travels (the big picture)
 
 When someone opens the site in Chrome or Edge:
 
@@ -64,7 +198,7 @@ Secrets (database keys, AI keys) stay on the **server**. We never put private ke
 
 ---
 
-## 4. Folder map (what each part does)
+## 5. Folder map (what each part does)
 
 ```
 my-app/
@@ -86,11 +220,15 @@ my-app/
         logout/route.ts      → POST sign out
 
   components/
+    home/                    → Home page sections (Hero, Matches, Team, …) — see section 2
     Navbar.tsx               → Logo, Home link, auth area
     NavAuth.tsx              → Shows Log in/Register OR name + Dashboard + Log out
     LoginForm.tsx            → Email login form + Google button
     RegisterForm.tsx         → Full name, email, password, confirm + Google
     GoogleSignInButton.tsx   → “Continue with Google”
+
+  lib/home/
+    content.ts               → Team names, demo jobs, feature text (easy to edit)
 
   lib/supabase/
     env.ts                   → Reads SUPABASE_URL and keys from .env.local
@@ -107,11 +245,11 @@ my-app/
 
 ---
 
-## 5. Pages your teammates can open
+## 6. Pages your teammates can open
 
 | URL | Who can see it | What happens |
 |-----|----------------|--------------|
-| `/` | Everyone | Home + team list |
+| `/` | Everyone | Modern home page (hero, matches, features, team) |
 | `/login` | Everyone | Log in form |
 | `/register` | Everyone | Create account form |
 | `/dashboard` | **Only logged-in users** | Welcome message; others sent to `/login` |
@@ -127,11 +265,11 @@ That is a basic **protected page** pattern we will reuse for real job data later
 
 ---
 
-## 6. How sign-up and log-in work
+## 7. How sign-up and log-in work
 
 We use **Supabase Auth**. Supabase stores users (email, password hash, Google id). Our app talks to Supabase through code in `lib/supabase/`.
 
-### 6a. Email registration (manual)
+### 7a. Email registration (manual)
 
 1. User fills **full name**, **email**, **password**, **confirm password** on `/register`.
 2. `RegisterForm.tsx` sends JSON to **`POST /api/auth/register`**.
@@ -145,7 +283,7 @@ We use **Supabase Auth**. Supabase stores users (email, password hash, Google id
 
 **Why an API route?** Password is checked on the server. We do not put secret logic only in the browser.
 
-### 6b. Email log-in
+### 7b. Email log-in
 
 1. User enters email + password on `/login`.
 2. `LoginForm.tsx` → **`POST /api/auth/login`**.
@@ -153,7 +291,7 @@ We use **Supabase Auth**. Supabase stores users (email, password hash, Google id
 4. Supabase sets **cookies** (small files) so the browser “remembers” the user.
 5. Redirect to **`/dashboard`**.
 
-### 6c. Google (one click)
+### 7c. Google (one click)
 
 1. User clicks **Log in with Google** on login or register.
 2. `GoogleSignInButton.tsx` opens Google’s page (OAuth).
@@ -161,9 +299,9 @@ We use **Supabase Auth**. Supabase stores users (email, password hash, Google id
 4. `auth/callback/route.ts` trades that code for a session.
 5. User lands on **`/dashboard`**.
 
-**You must configure Google** in Supabase dashboard (see section 9).
+**You must configure Google** in Supabase dashboard (see section 10).
 
-### 6d. Log out
+### 7d. Log out
 
 1. User clicks **Log out** in the navbar.
 2. App calls **`POST /api/auth/logout`** and browser `signOut`.
@@ -171,7 +309,7 @@ We use **Supabase Auth**. Supabase stores users (email, password hash, Google id
 
 ---
 
-## 7. Why the menu updates without refresh
+## 8. Why the menu updates without refresh
 
 Early version: menu was built on the **server** once per page load. After log out, it still showed your name until F5.
 
@@ -188,7 +326,7 @@ When logged out: **Log in · Register**.
 
 ---
 
-## 8. API routes (for Postman and future dashboard)
+## 9. API routes (for Postman and future dashboard)
 
 All APIs start with **http://localhost:3000** when you run `npm run dev`.
 
@@ -220,7 +358,7 @@ Sends your text prompt to Google’s model. Only works when `GEMINI_API_KEY` is 
 
 ---
 
-## 9. What you must set up in Supabase
+## 10. What you must set up in Supabase
 
 1. Create a project at **supabase.com**.
 2. **Project Settings → API** → copy URL and **anon public** key into `.env.local`:
@@ -255,7 +393,7 @@ After editing `.env.local`, always **restart** `npm run dev`.
 
 ---
 
-## 10. Environment file (`.env.local`)
+## 11. Environment file (`.env.local`)
 
 | Variable | Used for |
 |----------|----------|
@@ -269,7 +407,7 @@ After editing `.env.local`, always **restart** `npm run dev`.
 
 ---
 
-## 11. Tech words we use (short glossary)
+## 12. Tech words we use (short glossary)
 
 | Word | Plain meaning |
 |------|----------------|
@@ -277,6 +415,7 @@ After editing `.env.local`, always **restart** `npm run dev`.
 | **React** | Library to build buttons, forms, pages as components |
 | **TypeScript** | JavaScript with types — fewer silly bugs |
 | **Tailwind** | CSS classes like `text-lg` for styling |
+| **Framer Motion** | Small animations on the home page (fade in, float) |
 | **Supabase** | Cloud service: login + database |
 | **API route** | A URL that returns JSON, not a full HTML page |
 | **Middleware** | Code that runs before each page; keeps login cookies fresh |
@@ -286,7 +425,7 @@ After editing `.env.local`, always **restart** `npm run dev`.
 
 ---
 
-## 12. How to run the project (every teammate)
+## 13. How to run the project (every teammate)
 
 ```powershell
 cd my-app
@@ -302,20 +441,21 @@ npm run dev
 
 ---
 
-## 13. Deploy on Vercel (summary)
+## 14. Deploy on Vercel (summary)
 
 1. Push code to GitHub.
 2. Vercel → New project → root folder **`my-app`**, preset **Next.js**.
 3. Add same env vars as `.env.local` in Vercel settings.
-4. Add production callback URL in Supabase (see section 9).
+4. Add production callback URL in Supabase (see section 10).
 
 ---
 
-## 14. What we implemented vs what is next
+## 15. What we implemented vs what is next
 
 ### Done ✅
 
 - Single Next.js app structure
+- Modern home page (dark blue / white / yellow, Framer Motion, `components/home/`) — see **section 2**
 - Home page + SEO layout
 - Email register (full name, email, password, confirm)
 - Email login
@@ -336,7 +476,7 @@ npm run dev
 
 ---
 
-## 15. How to explain this in a presentation (2 minutes)
+## 16. How to explain this in a presentation (2 minutes)
 
 1. “We built **one Next.js app** — pages and APIs together.”
 2. “**Supabase** holds users and will hold job applications.”
@@ -346,7 +486,7 @@ npm run dev
 
 ---
 
-## 16. Questions teammates often ask
+## 17. Questions teammates often ask
 
 **Why do I only see Log in after I added Supabase in the browser?**  
 The **browser “connected”** feeling is not the same as keys in `.env.local`. The app needs `SUPABASE_URL` and `SUPABASE_ANON_KEY` on your machine.
@@ -362,7 +502,7 @@ Empty `.env.local`. Copy keys, restart `npm run dev`.
 
 ---
 
-## 17. Who to ask on the team
+## 18. Who to ask on the team
 
 Use this section in meetings:
 
@@ -376,7 +516,7 @@ Use this section in meetings:
 
 ---
 
-## 18. One sentence to remember
+## 19. One sentence to remember
 
 **Jobmatcher is a Next.js website where logged-in users will track jobs; Supabase stores users and data; we already ship login, Google, dashboard, and APIs — the dashboard list is the next brick to add.**
 
