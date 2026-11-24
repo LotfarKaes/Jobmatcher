@@ -8,12 +8,12 @@ import { createClient, createClientIfConfigured } from "@/lib/supabase/client";
 
 const guestLinks = (
   <div className="flex items-center gap-3 text-sm font-medium">
-    <Link href="/login" className="text-slate-600 hover:text-brand">
+    <Link href="/login" className="text-white/70 transition hover:text-accent">
       Log in
     </Link>
     <Link
       href="/register"
-      className="rounded-lg bg-brand px-3 py-1.5 text-white hover:bg-brand-dark"
+      className="rounded-lg bg-accent px-3 py-1.5 font-semibold text-midnight shadow-glow-yellow transition hover:bg-accent-bright"
     >
       Register
     </Link>
@@ -96,11 +96,11 @@ export function NavAuth() {
 
   return (
     <div className="flex items-center gap-3 text-sm font-medium">
-      <Link href="/dashboard" className="text-slate-600 hover:text-brand">
+      <Link href="/dashboard" className="text-white/70 transition hover:text-accent">
         Dashboard
       </Link>
       <span
-        className="hidden max-w-[140px] truncate text-slate-600 sm:inline"
+        className="hidden max-w-[140px] truncate text-white/60 sm:inline"
         title={user.email}
       >
         {fullName}
@@ -108,7 +108,7 @@ export function NavAuth() {
       <button
         type="button"
         onClick={handleLogout}
-        className="text-sm font-medium text-slate-600 hover:text-brand"
+        className="text-sm font-medium text-white/70 transition hover:text-accent"
       >
         Log out
       </button>

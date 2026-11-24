@@ -25,10 +25,10 @@ export default async function DashboardPage() {
   return (
     <main className="flex-1 px-4 py-16 sm:py-24">
       <div className="mx-auto max-w-3xl">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-          Welcome to Jobmatcher dashboard
+        <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          Welcome to <span className="text-accent">Jobmatcher</span> dashboard
         </h1>
-        <p className="mt-6 text-lg leading-relaxed text-slate-600">
+        <p className="mt-6 text-lg leading-relaxed text-white/65">
           This is your place to track job applications and stay organized. More
           features will appear here as your team builds them.
         </p>
