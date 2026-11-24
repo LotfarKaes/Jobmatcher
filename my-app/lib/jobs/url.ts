@@ -17,21 +17,34 @@ export type JobUrlKind =
   | { kind: "invalid" };
 
 /** Decides how a pasted job link can be imported. Pure function, no I/O. */
-export function classifyJobUrl(raw: string): JobUrlKind {
+export function classifyJobUrl(raw: string): JobUrlKind
+{
   let url: URL;
-  try {
+
+  try
+  {
     url = new URL(raw.trim());
-  } catch {
+  }
+  catch
+  {
     return { kind: "invalid" };
   }
-  if (url.protocol !== "https:" && url.protocol !== "http:") return { kind: "invalid" };
+
+  if (url.protocol !== "https:" && url.protocol !== "http:")
+    return { kind: "invalid" };
 
   const adId = parsePlatsbankenId(url.toString());
-  if (adId) return { kind: "platsbanken", adId };
+
+  if (adId)
+    return { kind: "platsbanken", adId };
 
   const host = url.hostname.toLowerCase().replace(/^www\./, "");
-  for (const [domain, site] of Object.entries(LOGIN_SITES)) {
-    if (host === domain || host.endsWith(`.${domain}`)) return { kind: "login_required", site };
+
+  for (const [domain, site] of Object.entries(LOGIN_SITES))
+  {
+    if (host === domain || host.endsWith(`.${domain}`))
+      return { kind: "login_required", site };
   }
+
   return { kind: "unsupported" };
 }

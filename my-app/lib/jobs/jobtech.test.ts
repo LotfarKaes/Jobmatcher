@@ -10,7 +10,8 @@ import {
 import { JobSearchQuerySchema, NormalizedJobSchema } from "./types";
 
 /** A fake fetch that records the request and returns the given JSON body and status. */
-function fakeFetch(body: unknown, status = 200) {
+function fakeFetch(body: unknown, status = 200)
+{
   return vi.fn(async (_url: string | URL | Request, _init?: RequestInit) =>
     new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } }),
   ) as unknown as typeof fetch & ReturnType<typeof vi.fn>;
@@ -133,7 +134,8 @@ describe("createJobTechClient", () => {
   });
 
   it("turns a network failure into UPSTREAM_ERROR", async () => {
-    const fetch = vi.fn(async () => {
+    const fetch = vi.fn(async () =>
+    {
       throw new TypeError("fetch failed");
     }) as unknown as typeof globalThis.fetch;
     const client = createJobTechClient({ fetch, apiKey: "" });

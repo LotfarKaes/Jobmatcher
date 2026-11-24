@@ -45,35 +45,51 @@ export const JobTechSearchResponseSchema = z.object({
 
 export type JobTechErrorCode = "NOT_FOUND" | "UPSTREAM_ERROR";
 
-/** Thrown by the client. API routes map `code` to the `{ error: { code, message } }` response. */
-export class JobTechError extends Error {
+/** Thrown by the client. API routes map `code` to the `{ error, code }` response (see http.ts). */
+export class JobTechError extends Error
+{
   constructor(
     public readonly code: JobTechErrorCode,
     message: string,
     public readonly status?: number,
-  ) {
+  )
+  {
     super(message);
     this.name = "JobTechError";
   }
 }
 
-function asUrl(value: string | null | undefined): string | null {
-  if (!value) return null;
-  try {
+function asUrl(value: string | null | undefined): string | null
+{
+  if (!value)
+    return null;
+
+  try
+  {
     const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : null;
-  } catch {
+
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url.toString()
+      : null;
+  }
+  catch
+  {
     return null;
   }
 }
 
-function skillLabels(...lists: (z.infer<typeof SkillListSchema>)[]): string[] {
-  const labels = lists.flatMap((l) => l?.skills ?? []).map((s) => s.label?.trim());
+function skillLabels(...lists: (z.infer<typeof SkillListSchema>)[]): string[]
+{
+  const labels = lists
+    .flatMap((l) => l?.skills ?? [])
+    .map((s) => s.label?.trim());
+
   return [...new Set(labels.filter((l): l is string => !!l))];
 }
 
 /** Pure mapper from a JobTech ad to our NormalizedJob. No I/O, easy to unit test. */
-export function mapJobTechAd(ad: JobTechAd): NormalizedJob {
+export function mapJobTechAd(ad: JobTechAd): NormalizedJob
+{
   const address = ad.workplace_address;
   const location = address?.city || address?.municipality || address?.region || null;
   const description = cleanText(ad.description?.text ?? ad.description?.text_formatted);
@@ -98,7 +114,8 @@ export function mapJobTechAd(ad: JobTechAd): NormalizedJob {
   };
 }
 
-export function platsbankenUrl(adId: string): string {
+export function platsbankenUrl(adId: string): string
+{
   return `https://arbetsformedlingen.se/platsbanken/annonser/${encodeURIComponent(adId)}`;
 }
 
@@ -106,20 +123,33 @@ export function platsbankenUrl(adId: string): string {
  * Returns the ad id from a Platsbanken link, or null if the URL isn't one.
  * Accepts e.g. https://arbetsformedlingen.se/platsbanken/annonser/29012345?foo=bar
  */
-export function parsePlatsbankenId(rawUrl: string): string | null {
+export function parsePlatsbankenId(rawUrl: string): string | null
+{
   let url: URL;
-  try {
+
+  try
+  {
     url = new URL(rawUrl.trim());
-  } catch {
+  }
+  catch
+  {
     return null;
   }
-  const host = url.hostname.toLowerCase().replace(/^www\./, "");
-  if (host !== "arbetsformedlingen.se") return null;
+
+  const host = url.hostname
+    .toLowerCase()
+    .replace(/^www\./, "");
+
+  if (host !== "arbetsformedlingen.se")
+    return null;
+
   const match = url.pathname.match(/^\/platsbanken\/annonser\/(\d+)\/?$/);
+
   return match?.[1] ?? null;
 }
 
-export interface JobTechClientOptions {
+export interface JobTechClientOptions
+{
   /** Injected for tests. Defaults to the global fetch. */
   fetch?: typeof fetch;
   baseUrl?: string;
@@ -127,66 +157,92 @@ export interface JobTechClientOptions {
   apiKey?: string;
 }
 
-export function createJobTechClient(options: JobTechClientOptions = {}) {
+/**
+ * Creates a client for the JobTech API.
+ */
+export function createJobTechClient(options: JobTechClientOptions = {})
+{
   const doFetch = options.fetch ?? fetch;
   const baseUrl = options.baseUrl ?? JOBTECH_BASE_URL;
   const apiKey = options.apiKey ?? process.env.JOBTECH_API_KEY;
 
-  async function getJson(path: string, params?: URLSearchParams): Promise<unknown> {
+  async function getJson(path: string, params?: URLSearchParams): Promise<unknown>
+  {
     const url = `${baseUrl}${path}${params ? `?${params}` : ""}`;
     const headers: Record<string, string> = { accept: "application/json" };
-    if (apiKey) headers["api-key"] = apiKey;
+
+    if (apiKey)
+      headers["api-key"] = apiKey;
 
     let res: Response;
-    try {
+
+    try
+    {
       // fetch has no default timeout, unlike HttpClient's 100 s.
       res = await doFetch(url, { headers, signal: AbortSignal.timeout(TIMEOUT_MS) });
-    } catch (err) {
-      const reason = err instanceof Error && err.name === "TimeoutError" ? "timed out" : "could not be reached";
+    }
+    catch (err)
+    {
+      const reason = err instanceof Error && err.name === "TimeoutError"
+        ? "timed out"
+        : "could not be reached";
+
       throw new JobTechError("UPSTREAM_ERROR", `The job search service ${reason}. Try again in a moment.`);
     }
 
     // fetch does not throw on 4xx/5xx, so check status explicitly.
-    if (res.status === 404) {
+    if (res.status === 404)
       throw new JobTechError("NOT_FOUND", "That job ad no longer exists on Platsbanken.", 404);
-    }
-    if (!res.ok) {
+
+    if (!res.ok)
       throw new JobTechError("UPSTREAM_ERROR", `The job search service returned an error (${res.status}).`, res.status);
-    }
+
     return res.json();
   }
 
   return {
     /** Keyword search. Returns normalized jobs; nothing is saved. */
-    async search(query: JobSearchQuery): Promise<JobSearchResult> {
+    async search(query: JobSearchQuery): Promise<JobSearchResult>
+    {
       const params = new URLSearchParams({
         q: query.q,
         offset: String(query.offset),
         limit: String(query.limit),
       });
-      if (query.municipality) params.set("municipality", query.municipality);
-      if (query.remote) params.set("remote", "true");
+
+      if (query.municipality)
+        params.set("municipality", query.municipality);
+
+      if (query.remote)
+        params.set("remote", "true");
 
       const body = JobTechSearchResponseSchema.parse(await getJson("/search", params));
 
       // Parse ads one by one so a single odd ad is skipped instead of failing the whole page.
       const items: NormalizedJob[] = [];
-      for (const hit of body.hits) {
+
+      for (const hit of body.hits)
+      {
         const ad = JobTechAdSchema.safeParse(hit);
-        if (ad.success) items.push(mapJobTechAd(ad.data));
+
+        if (ad.success)
+          items.push(mapJobTechAd(ad.data));
       }
+
       return { total: body.total?.value ?? items.length, items };
     },
 
     /** One ad by its JobTech / Platsbanken id. */
-    async getAd(id: string): Promise<NormalizedJob> {
-      if (!/^\d+$/.test(id)) {
+    async getAd(id: string): Promise<NormalizedJob>
+    {
+      if (!/^\d+$/.test(id))
         throw new JobTechError("NOT_FOUND", "That is not a valid Platsbanken ad id.");
-      }
+
       const ad = JobTechAdSchema.safeParse(await getJson(`/ad/${id}`));
-      if (!ad.success) {
+
+      if (!ad.success)
         throw new JobTechError("UPSTREAM_ERROR", "The job search service returned an ad we could not read.");
-      }
+
       return mapJobTechAd(ad.data);
     },
   };

@@ -41,9 +41,11 @@ export const JobSearchQuerySchema = z.object({
   offset: z.coerce.number().int().min(0).max(2000).default(0),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
+
 export type JobSearchQuery = z.infer<typeof JobSearchQuerySchema>;
 
-export interface JobSearchResult {
+export interface JobSearchResult
+{
   total: number;
   items: NormalizedJob[];
 }

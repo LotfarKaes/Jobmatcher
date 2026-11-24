@@ -22,7 +22,8 @@ export type SaveJobBody = z.infer<typeof SaveJobBodySchema>;
 type ManualJobBody = Extract<SaveJobBody, { source: "manual" }>;
 
 /** Turns pasted text into a NormalizedJob. */
-export function manualJob(body: ManualJobBody): NormalizedJob {
+export function manualJob(body: ManualJobBody): NormalizedJob
+{
   return {
     source: "manual",
     externalId: null,
@@ -43,7 +44,8 @@ export function manualJob(body: ManualJobBody): NormalizedJob {
 }
 
 /** Row shape of the `jobs` table (snake_case, see supabase/jobs.sql). */
-export interface JobRow {
+export interface JobRow
+{
   id: string;
   source: NormalizedJob["source"];
   external_id: string | null;
@@ -64,7 +66,8 @@ export interface JobRow {
   created_at: string;
 }
 
-export function toJobInsert(job: NormalizedJob, userId: string): Omit<JobRow, "id" | "created_at"> {
+export function toJobInsert(job: NormalizedJob, userId: string): Omit<JobRow, "id" | "created_at">
+{
   return {
     source: job.source,
     external_id: job.externalId,

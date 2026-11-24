@@ -10,12 +10,21 @@ const ENTITIES: Record<string, string> = {
   nbsp: " ",
 };
 
-function decodeEntities(text: string): string {
-  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (match, code: string) => {
-    if (code[0] === "#") {
-      const n = code[1]?.toLowerCase() === "x" ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10);
-      return Number.isFinite(n) && n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : match;
+function decodeEntities(text: string): string
+{
+  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (match, code: string) =>
+  {
+    if (code[0] === "#")
+    {
+      const n = code[1]?.toLowerCase() === "x"
+        ? parseInt(code.slice(2), 16)
+        : parseInt(code.slice(1), 10);
+
+      return Number.isFinite(n) && n > 0 && n <= 0x10ffff
+        ? String.fromCodePoint(n)
+        : match;
     }
+
     return ENTITIES[code.toLowerCase()] ?? match;
   });
 }
@@ -26,8 +35,10 @@ function decodeEntities(text: string): string {
  * whitespace is collapsed (keeping at most one blank line), and the result is
  * capped at `maxLength` characters.
  */
-export function cleanText(input: string | null | undefined, maxLength = MAX_DESCRIPTION_LENGTH): string {
-  if (!input) return "";
+export function cleanText(input: string | null | undefined, maxLength = MAX_DESCRIPTION_LENGTH): string
+{
+  if (!input)
+    return "";
 
   let text = input
     .replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, "")
@@ -43,5 +54,7 @@ export function cleanText(input: string | null | undefined, maxLength = MAX_DESC
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 
-  return text.length > maxLength ? text.slice(0, maxLength).trimEnd() : text;
+  return text.length > maxLength
+    ? text.slice(0, maxLength).trimEnd()
+    : text;
 }

@@ -17,19 +17,31 @@ export type JobErrorCode =
   | "DB_ERROR"
   | "NOT_CONFIGURED";
 
-export function jobError(code: JobErrorCode, message: string, status: number) {
+export function jobError(code: JobErrorCode, message: string, status: number)
+{
   return NextResponse.json({ error: message, code }, { status });
 }
 
-export function invalidInput(error: z.ZodError) {
-  const details = error.issues.map((i) => `${i.path.join(".") || "body"}: ${i.message}`).join("; ");
+export function invalidInput(error: z.ZodError)
+{
+  const details = error.issues
+    .map((i) => `${i.path.join(".") || "body"}: ${i.message}`)
+    .join("; ");
+
   return jobError("INVALID_INPUT", `Invalid input. ${details}`, 400);
 }
 
 /** Maps errors thrown by the JobTech client to responses; rethrows anything unexpected. */
-export function fromJobTechError(err: unknown) {
-  if (err instanceof JobTechError) {
-    return jobError(err.code, err.message, err.code === "NOT_FOUND" ? 404 : 502);
+export function fromJobTechError(err: unknown)
+{
+  if (err instanceof JobTechError)
+  {
+    const status = err.code === "NOT_FOUND"
+      ? 404
+      : 502;
+
+    return jobError(err.code, err.message, status);
   }
+
   throw err;
 }
