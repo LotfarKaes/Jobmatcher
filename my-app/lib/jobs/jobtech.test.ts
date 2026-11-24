@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import sampleAd from "./__fixtures__/jobtech-ad.json";
+import realAd from "./__fixtures__/jobtech-ad-real.json";
 import {
   createJobTechClient,
   JobTechAdSchema,
@@ -59,6 +60,37 @@ describe("mapJobTechAd", () => {
   it("drops non-http URLs", () => {
     const ad = JobTechAdSchema.parse({ id: "2", application_details: { url: "javascript:alert(1)" } });
     expect(mapJobTechAd(ad).applyUrl).toBeNull();
+  });
+});
+
+describe("mapJobTechAd with a real JobTech ad", () => {
+  const job = mapJobTechAd(JobTechAdSchema.parse(realAd));
+
+  it("produces a valid NormalizedJob", () => {
+    expect(NormalizedJobSchema.safeParse(job).success).toBe(true);
+  });
+
+  it("maps the fields we use", () => {
+    expect(job).toMatchObject({
+      source: "jobtech",
+      externalId: "31766492",
+      sourceUrl: "https://arbetsformedlingen.se/platsbanken/annonser/31766492",
+      title: "Mjukvaruutvecklare C#",
+      company: "Procruitment AB",
+      location: "Jönköping",
+      salaryText: null,
+      postedAt: "2026-11-23T12:55:06",
+      deadlineAt: "2027-05-22T23:59:59",
+      remote: null,
+      skills: [],
+    });
+    expect(job.applyUrl).toMatch(/^https:\/\/jobb\.procruitment\.se\//);
+  });
+
+  it("keeps the description as clean plain text", () => {
+    expect(job.description.startsWith("Om kunden\n")).toBe(true);
+    expect(job.description).not.toMatch(/<[a-z]/i);
+    expect(job.description).not.toMatch(/\n{3,}/);
   });
 });
 

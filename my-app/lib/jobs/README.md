@@ -38,5 +38,5 @@ npm test          # vitest
 npm run typecheck # tsc
 ```
 
-`__fixtures__/jobtech-ad.json` is a hand-written sample, not a captured API response.
-Replace it with a real `/ad/{id}` response once you've run `jobtech.http`.
+`__fixtures__/jobtech-ad-real.json` is a real `/ad/{id}` response (contact details redacted).
+`__fixtures__/jobtech-ad.json` is a hand-written sample used for edge cases such as duplicate skills and HTML entities.

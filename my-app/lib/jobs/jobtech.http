@@ -5,7 +5,7 @@ GET https://jobsearch.api.jobtechdev.se/search?q=c%23&limit=2
 Accept: application/json
 
 ### One ad by id (take an id from the search result above)
-GET https://jobsearch.api.jobtechdev.se/ad/29012345
+GET https://jobsearch.api.jobtechdev.se/ad/31766492
 Accept: application/json
 
 ### Local routes (npm run dev first)
@@ -15,4 +15,4 @@ GET http://localhost:3000/api/jobs/search?q=react&limit=5
 POST http://localhost:3000/api/jobs/import
 Content-Type: application/json
 
-{ "url": "https://arbetsformedlingen.se/platsbanken/annonser/29012345" }
+{ "url": "https://arbetsformedlingen.se/platsbanken/annonser/31766492" }
