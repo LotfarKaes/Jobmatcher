@@ -359,7 +359,34 @@ Same as dashboard: **midnight** background, **yellow (`accent`)** for match % an
 #### Real data later
 
 - `POST /api/items` already exists — map rows to `KanbanCardData` and filter by `status` into columns.  
-- Drag-and-drop can be added with a library or HTML5 DnD in a later sprint.
+- On drop, call the API to update `status` (next sprint).
+
+### Step 12 — Drag cards between columns
+
+**Library:** `@dnd-kit/core` (small, works well with React).
+
+#### Simple flow (4 steps)
+
+1. **`KanbanBoard`** keeps `board` in `useState` (copy of `KANBAN_CARDS` at start).  
+2. **`DndContext`** wraps all columns — handles `onDragStart` / `onDragEnd`.  
+3. Each **`KanbanDraggableCard`** uses `useDraggable({ id: card.id })`.  
+4. Each **`KanbanColumn`** uses `useDroppable({ id: column.id })` (Saved, Applied, …).
+
+When you drop a card, **`moveKanbanCard`** in `lib/dashboard/kanban-drag.ts` updates the arrays:
+
+- Drop on **empty column** → `over.id` is the stage name (`interview`, etc.).  
+- Drop on **another card** → card moves into that column at that position.
+
+#### Files to read
+
+| File | Role |
+|------|------|
+| `KanbanBoard.tsx` | State + `DndContext` |
+| `KanbanDraggableCard.tsx` | Draggable wrapper |
+| `KanbanColumn.tsx` | Droppable column |
+| `kanban-drag.ts` | Pure functions (easy to unit test) |
+
+Cards are **in browser memory only** until you save to Supabase after `onDragEnd`.
 
 ---
 
