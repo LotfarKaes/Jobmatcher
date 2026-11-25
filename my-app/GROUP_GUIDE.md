@@ -201,7 +201,10 @@ my-app/
     DashboardApp.tsx          → Client “brain”: which menu is active
     DashboardSidebar.tsx      → Left menu buttons
     DashboardHeader.tsx       → Title row + “Export full audit” (demo)
-    DashboardOverview.tsx     → Grid of 3 StatCards
+    DashboardStatsGrid.tsx      → 3 stat cards (Kanban page)
+    DashboardKanbanView.tsx     → Stats + board preview
+    DashboardAiMatchView.tsx    → Job match list (AI match page)
+    DashboardJobSearchView.tsx  → Search UI (Job search page)
     StatCard.tsx              → One metric card (props: value, badge, trend, …)
     DashboardPlaceholder.tsx  → Other menu items until we build them
     DashboardIcons.tsx        → Small SVG icons for menu + cards
@@ -223,7 +226,7 @@ DashboardApp  (client)
     ├─ useState → active menu id ("dashboard", "kanban", …)
     ├─ DashboardSidebar → onSelect changes active id
     ├─ DashboardHeader → title for current section
-    └─ if dashboard → DashboardOverview (3 cards)
+    └─ job search → search UI | AI match → job strips | kanban → stats + board
         else → DashboardPlaceholder ("next sprint")
 ```
 
@@ -233,9 +236,9 @@ DashboardApp  (client)
 
 | Menu id | Label | What you see today |
 |---------|--------|-------------------|
-| `dashboard` | Dashboard | 3 stat cards (jobs saved, match %, interviews) |
-| `job-search` | Job search / AI match | Placeholder panel |
-| `kanban` | Kanban board | Placeholder |
+| `dashboard` | Job search | Search bar (demo) |
+| `job-search` | AI match | Saved roles deep match + 4 strips |
+| `kanban` | Kanban board | Telemetry header + 3 stat cards + board preview |
 | `interview` | Interview prep | Placeholder |
 | `cv` | My CV | Placeholder |
 | `settings` | Settings | Placeholder |
@@ -288,8 +291,22 @@ npm run dev
 |------|------|
 | Menu text | `lib/dashboard/content.ts` → `DASHBOARD_NAV` |
 | Stat numbers / labels | `lib/dashboard/content.ts` → `DASHBOARD_STATS` |
-| Card layout | `StatCard.tsx`, `DashboardOverview.tsx` |
+| Card layout | `StatCard.tsx`, `DashboardStatsGrid.tsx`, `JobMatchList.tsx` |
 | New real screen (e.g. Kanban) | Replace placeholder branch in `DashboardApp.tsx` with a new component |
+
+### Step 10 — Four job match rows (below stats, no tabs)
+
+**Layout:** Under the 3 stat cards, **`JobMatchList`** shows **all 4 jobs** on the page (scroll). Each row is one **`JobMatchStrip`** — job details and fit score in **one card** with **no gap** between left (title, salary, tags) and right (94%, vector fit, badge, headline).
+
+| Piece | File |
+|-------|------|
+| List of 4 rows | `JobMatchList.tsx` |
+| Single combined row | `JobMatchStrip.tsx` |
+| Demo job data | `DASHBOARD_JOB_MATCHES` in `lib/dashboard/content.ts` |
+
+`JobPostingCard.tsx` and `VectorFitCard.tsx` stay in the repo as split components; the live dashboard uses the **merged** strip.
+
+Still **demo data** until `/api/items` or Gemini returns real roles.
 
 ---
 
