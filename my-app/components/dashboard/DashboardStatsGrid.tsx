@@ -11,8 +11,8 @@ const STAT_ICONS = {
   funnel: <IconCalendar className="h-5 w-5" />,
 } as const;
 
-/** Default dashboard view — three stat cards in a grid (demo numbers). */
-export function DashboardOverview() {
+/** Three pipeline stat cards (Kanban board page). */
+export function DashboardStatsGrid() {
   const reduceMotion = useReducedMotion();
 
   return (
@@ -20,7 +20,7 @@ export function DashboardOverview() {
       initial={reduceMotion ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      aria-label="Dashboard overview"
+      aria-label="Pipeline stats"
       className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
     >
       {DASHBOARD_STATS.map((stat, index) => (

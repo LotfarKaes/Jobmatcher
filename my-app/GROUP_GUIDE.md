@@ -201,7 +201,11 @@ my-app/
     DashboardApp.tsx          → Client “brain”: which menu is active
     DashboardSidebar.tsx      → Left menu buttons
     DashboardHeader.tsx       → Title row + “Export full audit” (demo)
-    DashboardOverview.tsx     → Grid of 3 StatCards
+    DashboardStatsGrid.tsx      → 3 stat cards (Kanban page)
+    DashboardKanbanView.tsx     → Stats + KanbanBoard
+    kanban/KanbanBoard.tsx      → 5-column pipeline (see step 11)
+    DashboardAiMatchView.tsx    → Job match list (AI match page)
+    DashboardJobSearchView.tsx  → Search UI (Job search page)
     StatCard.tsx              → One metric card (props: value, badge, trend, …)
     DashboardPlaceholder.tsx  → Other menu items until we build them
     DashboardIcons.tsx        → Small SVG icons for menu + cards
@@ -223,7 +227,7 @@ DashboardApp  (client)
     ├─ useState → active menu id ("dashboard", "kanban", …)
     ├─ DashboardSidebar → onSelect changes active id
     ├─ DashboardHeader → title for current section
-    └─ if dashboard → DashboardOverview (3 cards)
+    └─ job search → search UI | AI match → job strips | kanban → stats + board
         else → DashboardPlaceholder ("next sprint")
 ```
 
@@ -233,9 +237,9 @@ DashboardApp  (client)
 
 | Menu id | Label | What you see today |
 |---------|--------|-------------------|
-| `dashboard` | Dashboard | 3 stat cards (jobs saved, match %, interviews) |
-| `job-search` | Job search / AI match | Placeholder panel |
-| `kanban` | Kanban board | Placeholder |
+| `dashboard` | Job search | Search bar (demo) |
+| `job-search` | AI match | Saved roles deep match + 4 strips |
+| `kanban` | Kanban board | Telemetry header + 3 stat cards + 5-column pipeline |
 | `interview` | Interview prep | Placeholder |
 | `cv` | My CV | Placeholder |
 | `settings` | Settings | Placeholder |
@@ -280,7 +284,7 @@ npm run dev
 
 1. Register or log in  
 2. Open **http://localhost:3000/dashboard**  
-3. Click sidebar items — only **Dashboard** shows cards; others show the placeholder  
+3. Click sidebar items — **Kanban board**, **AI match**, and **Job search** have real UI; others are placeholders  
 
 ### Step 9 — Who edits what
 
@@ -288,8 +292,74 @@ npm run dev
 |------|------|
 | Menu text | `lib/dashboard/content.ts` → `DASHBOARD_NAV` |
 | Stat numbers / labels | `lib/dashboard/content.ts` → `DASHBOARD_STATS` |
-| Card layout | `StatCard.tsx`, `DashboardOverview.tsx` |
+| Card layout | `StatCard.tsx`, `DashboardStatsGrid.tsx`, `JobMatchList.tsx` |
 | New real screen (e.g. Kanban) | Replace placeholder branch in `DashboardApp.tsx` with a new component |
+
+### Step 10 — Four job match rows (below stats, no tabs)
+
+**Layout:** Under the 3 stat cards, **`JobMatchList`** shows **all 4 jobs** on the page (scroll). Each row is one **`JobMatchStrip`** — job details and fit score in **one card** with **no gap** between left (title, salary, tags) and right (94%, vector fit, badge, headline).
+
+| Piece | File |
+|-------|------|
+| List of 4 rows | `JobMatchList.tsx` |
+| Single combined row | `JobMatchStrip.tsx` |
+| Demo job data | `DASHBOARD_JOB_MATCHES` in `lib/dashboard/content.ts` |
+
+`JobPostingCard.tsx` and `VectorFitCard.tsx` stay in the repo as split components; the live dashboard uses the **merged** strip.
+
+Still **demo data** until `/api/items` or Gemini returns real roles.
+
+### Step 11 — Kanban pipeline board (5 columns)
+
+**Date:** 25 November 2026  
+**Where:** Sidebar → **Kanban board** (below the 3 stat cards).
+
+We copied the team wireframe: **Application pipeline & tracker** with filters and five stages.
+
+#### What you see
+
+| Part | What it does |
+|------|----------------|
+| Toolbar | Title, **Match velocity**, **+ Add application**, search + Status/Tier/Sort (demo) |
+| **Saved** | 3 cards — company, role, match % |
+| **Applied** | 4 cards — badges, warnings, “Send ping” |
+| **Interview** | 3 cards — **TARGET STAGE** highlight, readiness bar, calendar line |
+| **Offer** | Salary line + deadline |
+| **Rejected** | Dimmed card + strikethrough title |
+
+#### Files (read in this order)
+
+```
+lib/dashboard/kanban-content.ts   → Column names + all demo cards (edit here)
+components/dashboard/kanban/
+  KanbanBoard.tsx                 → Puts toolbar + columns together
+  KanbanToolbar.tsx               → Header + filters (search uses useState)
+  KanbanColumn.tsx                → One stage column + card list
+  KanbanCard.tsx                  → One job card (props from data)
+DashboardKanbanView.tsx           → Stats grid + <KanbanBoard />
+```
+
+#### How React fits together
+
+1. **`KANBAN_COLUMNS`** — list of stages (saved → rejected).  
+2. **`KANBAN_CARDS`** — object keyed by stage id; each value is an array of cards.  
+3. **`KanbanBoard`** maps columns → **`KanbanColumn`** → maps cards → **`KanbanCard`**.  
+4. **`KanbanCard`** only reads props — no hard-coded job names inside the component.
+
+#### Add or change a card
+
+Open **`kanban-content.ts`**, find the stage (e.g. `interview`), copy an existing card object, change `id`, `company`, `title`. Refresh the browser.
+
+Optional fields: `progress`, `interviewEvent`, `offerLine`, `featured`, `dimmed`, `strikethrough`.
+
+#### Theme
+
+Same as dashboard: **midnight** background, **yellow (`accent`)** for match % and highlights, **blue (`brand`)** on progress bars — not the green from the Figma export.
+
+#### Real data later
+
+- `POST /api/items` already exists — map rows to `KanbanCardData` and filter by `status` into columns.  
+- Drag-and-drop can be added with a library or HTML5 DnD in a later sprint.
 
 ---
 
@@ -596,6 +666,7 @@ npm run dev
 - Modern home page (dark blue / white / yellow, Framer Motion, `components/home/`) — see **section 2**
 - Home page loader (CV drop + match % while content appears) — **section 2, step 8**
 - Dashboard UI (sidebar, stat cards, demo menus) — **section 3**
+- Kanban pipeline (5 columns, filter bar) — **section 3, step 11**
 - Home page + SEO layout
 - Email register (full name, email, password, confirm)
 - Email login
