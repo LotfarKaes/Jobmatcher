@@ -1,14 +1,14 @@
 "use client";
 
 import { DashboardStatsGrid } from "./DashboardStatsGrid";
-import { KanbanBoardPreview } from "./KanbanBoardPreview";
+import { KanbanBoard } from "./kanban/KanbanBoard";
 
-/** Kanban menu: telemetry header (in parent) + stats + board preview. */
+/** Kanban menu: stats row + full pipeline board. */
 export function DashboardKanbanView() {
   return (
     <div className="space-y-8">
       <DashboardStatsGrid />
-      <KanbanBoardPreview />
+      <KanbanBoard />
     </div>
   );
 }
