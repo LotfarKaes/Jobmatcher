@@ -1,16 +1,17 @@
-import {
-  KANBAN_CARDS,
-  type KanbanColumnConfig,
-} from "@/lib/dashboard/kanban-content";
-import { KanbanCard } from "./KanbanCard";
+"use client";
+
+import { useDroppable } from "@dnd-kit/core";
+import type { KanbanCardData, KanbanColumnConfig } from "@/lib/dashboard/kanban-content";
+import { KanbanDraggableCard } from "./KanbanDraggableCard";
 
 type KanbanColumnProps = {
   column: KanbanColumnConfig;
+  cards: KanbanCardData[];
 };
 
-export function KanbanColumn({ column }: KanbanColumnProps) {
-  const cards = KANBAN_CARDS[column.id];
+export function KanbanColumn({ column, cards }: KanbanColumnProps) {
   const count = cards.length;
+  const { setNodeRef, isOver } = useDroppable({ id: column.id });
 
   const dotClass = {
     white: "bg-white/70",
@@ -20,11 +21,12 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
 
   return (
     <div
-      className={`flex min-h-[20rem] min-w-0 w-full flex-col rounded-2xl border bg-midnight-surface/60 ${
+      ref={setNodeRef}
+      className={`flex min-h-[20rem] min-w-0 w-full flex-col rounded-2xl border bg-midnight-surface/60 transition ${
         column.targetStage
           ? "border-accent/40 shadow-glow-yellow"
           : "border-white/10"
-      }`}
+      } ${isOver ? "ring-2 ring-accent/50 ring-offset-1 ring-offset-midnight" : ""}`}
     >
       <div className="flex items-center justify-between gap-2 border-b border-white/10 px-3 py-3">
         <div className="flex min-w-0 items-center gap-2">
@@ -53,10 +55,13 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
 
       <ul className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-3">
         {cards.map((card) => (
-          <li key={card.id}>
-            <KanbanCard card={card} />
-          </li>
+          <KanbanDraggableCard key={card.id} card={card} />
         ))}
+        {count === 0 ? (
+          <li className="rounded-xl border border-dashed border-white/15 p-4 text-center text-xs text-white/35">
+            Drop cards here
+          </li>
+        ) : null}
       </ul>
     </div>
   );
