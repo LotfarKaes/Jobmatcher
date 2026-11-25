@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { DashboardApp } from "@/components/dashboard/DashboardApp";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: "Your Jobmatcher application tracker dashboard.",
+  description: "Jobmatcher analytical command hub — track jobs, matches, and interviews.",
 };
 
 export default async function DashboardPage() {
@@ -22,17 +23,14 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  const userLabel =
+    (user.user_metadata?.full_name as string | undefined)?.trim() ||
+    user.email ||
+    "Signed in";
+
   return (
-    <main className="flex-1 px-4 py-16 sm:py-24">
-      <div className="mx-auto max-w-3xl">
-        <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-          Welcome to <span className="text-accent">Jobmatcher</span> dashboard
-        </h1>
-        <p className="mt-6 text-lg leading-relaxed text-white/65">
-          This is your place to track job applications and stay organized. More
-          features will appear here as your team builds them.
-        </p>
-      </div>
+    <main className="flex-1">
+      <DashboardApp userLabel={userLabel} />
     </main>
   );
 }

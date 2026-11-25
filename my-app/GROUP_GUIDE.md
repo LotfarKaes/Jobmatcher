@@ -19,7 +19,7 @@ Right now we have:
 
 - A **public home page** (who we are, what the project is).
 - **Sign up and log in** (email + password, or Google).
-- A **private dashboard** after login.
+- A **private dashboard** after login (sidebar + overview cards — section 3).
 - **API endpoints** for health checks, job list (database), and AI (ready but optional).
 - Connection to **Supabase** (online database + user accounts).
 - A **modern marketing home page** (dark blue, white and yellow text, animations) — see section 2.
@@ -109,7 +109,7 @@ my-app/
 | `components/Navbar.tsx` | Dark bar, links: Home, Matches, Features, Team |
 | `components/NavAuth.tsx` | Yellow **Register** button, white **Log in** link |
 
-Login still uses Supabase the same way as before (sections 7–8 below); only the **look** changed.
+Login still uses Supabase the same way as before (sections 8–9 below); only the **look** changed.
 
 ### Step 7 — Login and register (visual only)
 
@@ -177,7 +177,123 @@ Next team task can be: save real jobs from `/api/items` on the dashboard and wir
 
 ---
 
-## 3. One app, not two servers
+## 3. Dashboard UI — command hub (step by step)
+
+**Date:** 25 November 2026  
+**Goal:** After login, show a **real dashboard layout** (sidebar menu + stat cards), not only a welcome line. Match the team’s wireframe: suite name on the left, **three metric cards** on the right, same **dark blue / white / yellow** theme as the home page.
+
+Front-end only for now — numbers and menus are **demo data**. Next sprints can load `/api/items` and Supabase.
+
+### Step 1 — What we built
+
+1. **Protected page stays the same** — `app/dashboard/page.tsx` still checks Supabase and redirects guests to `/login`.
+2. **New UI shell** — sidebar with 6 menu items; main area shows **overview cards** or a “coming soon” panel.
+3. **Reusable pieces** — small components with **props** so anyone can read one file at a time.
+
+### Step 2 — Folder structure
+
+```
+my-app/
+  lib/dashboard/
+    content.ts              → Menu labels, stat numbers, page titles (edit here)
+
+  components/dashboard/
+    DashboardApp.tsx          → Client “brain”: which menu is active
+    DashboardSidebar.tsx      → Left menu buttons
+    DashboardHeader.tsx       → Title row + “Export full audit” (demo)
+    DashboardOverview.tsx     → Grid of 3 StatCards
+    StatCard.tsx              → One metric card (props: value, badge, trend, …)
+    DashboardPlaceholder.tsx  → Other menu items until we build them
+    DashboardIcons.tsx        → Small SVG icons for menu + cards
+
+  app/dashboard/
+    page.tsx                  → Server: auth check, pass user name to DashboardApp
+```
+
+### Step 3 — How the code talks (easy picture)
+
+```
+dashboard/page.tsx  (server)
+    │
+    ├─ createClient() → get logged-in user
+    ├─ if no user → redirect /login
+    └─ <DashboardApp userLabel="Your name" />
+
+DashboardApp  (client)
+    ├─ useState → active menu id ("dashboard", "kanban", …)
+    ├─ DashboardSidebar → onSelect changes active id
+    ├─ DashboardHeader → title for current section
+    └─ if dashboard → DashboardOverview (3 cards)
+        else → DashboardPlaceholder ("next sprint")
+```
+
+**Why split server + client?** Login check must run on the **server** (secure). Clicking menu items needs **React state** in the browser → `DashboardApp` is `"use client"`.
+
+### Step 4 — Menu items (demo navigation)
+
+| Menu id | Label | What you see today |
+|---------|--------|-------------------|
+| `dashboard` | Dashboard | 3 stat cards (jobs saved, match %, interviews) |
+| `job-search` | Job search / AI match | Placeholder panel |
+| `kanban` | Kanban board | Placeholder |
+| `interview` | Interview prep | Placeholder |
+| `cv` | My CV | Placeholder |
+| `settings` | Settings | Placeholder |
+
+Change labels or add items in **`lib/dashboard/content.ts`** (`DASHBOARD_NAV`).
+
+### Step 5 — Stat cards (overview)
+
+Demo metrics (from wireframe, yellow highlight on match score):
+
+| Card | Demo value |
+|------|------------|
+| Total jobs saved | 12 (+4 this week) |
+| Average match score | **82**/100 (high tier) |
+| Interviews booked | 3 (2 upcoming) |
+
+Edit in **`DASHBOARD_STATS`** in `content.ts`. Each card is one **`StatCard`** with props — no copy-paste HTML.
+
+### Step 6 — Theme (same as home)
+
+- Background: `midnight`, cards: `glass-panel`
+- Headings: **white**, highlights: **`accent` (yellow)**
+- Active menu item: blue glow + yellow icon
+
+No new colors — reuses `tailwind.config.ts` from the home page work.
+
+### Step 7 — What is real vs demo
+
+| Part | Status |
+|------|--------|
+| Must be logged in to open `/dashboard` | **Real** (Supabase) |
+| User name in sidebar | **Real** (from auth metadata or email) |
+| Stat numbers, export button, other menus | **Demo UI** |
+| Connect to `/api/items` | **Next task** |
+
+### Step 8 — Try it
+
+```powershell
+cd my-app
+npm run dev
+```
+
+1. Register or log in  
+2. Open **http://localhost:3000/dashboard**  
+3. Click sidebar items — only **Dashboard** shows cards; others show the placeholder  
+
+### Step 9 — Who edits what
+
+| Task | File |
+|------|------|
+| Menu text | `lib/dashboard/content.ts` → `DASHBOARD_NAV` |
+| Stat numbers / labels | `lib/dashboard/content.ts` → `DASHBOARD_STATS` |
+| Card layout | `StatCard.tsx`, `DashboardOverview.tsx` |
+| New real screen (e.g. Kanban) | Replace placeholder branch in `DashboardApp.tsx` with a new component |
+
+---
+
+## 4. One app, not two servers
 
 We used to think about a separate “frontend folder” and “backend folder.”  
 Now everything lives in **one Next.js app** inside **`my-app/`**.
@@ -195,7 +311,7 @@ You run **one command**: `npm run dev` → open **http://localhost:3000**.
 
 ---
 
-## 4. How a request travels (the big picture)
+## 5. How a request travels (the big picture)
 
 When someone opens the site in Chrome or Edge:
 
@@ -216,7 +332,7 @@ Secrets (database keys, AI keys) stay on the **server**. We never put private ke
 
 ---
 
-## 5. Folder map (what each part does)
+## 6. Folder map (what each part does)
 
 ```
 my-app/
@@ -226,7 +342,7 @@ my-app/
     globals.css              → Site-wide colors (Tailwind)
     login/page.tsx           → Login screen
     register/page.tsx        → Sign-up screen
-    dashboard/page.tsx       → After login: “Welcome to Jobmatcher dashboard”
+    dashboard/page.tsx       → After login: dashboard UI (sidebar + stat cards) — section 3
     auth/callback/route.ts   → Google returns here after sign-in
     api/
       health/route.ts        → GET /api/health  — “is the server alive?”
@@ -239,6 +355,7 @@ my-app/
 
   components/
     home/                    → Home page sections (Hero, Matches, Team, …) — see section 2
+    dashboard/               → Dashboard sidebar, cards, placeholders — see section 3
     Navbar.tsx               → Logo, Home link, auth area
     NavAuth.tsx              → Shows Log in/Register OR name + Dashboard + Log out
     LoginForm.tsx            → Email login form + Google button
@@ -247,6 +364,9 @@ my-app/
 
   lib/home/
     content.ts               → Team names, demo jobs, feature text (easy to edit)
+
+  lib/dashboard/
+    content.ts               → Dashboard menu + demo stat numbers
 
   lib/supabase/
     env.ts                   → Reads SUPABASE_URL and keys from .env.local
@@ -263,31 +383,31 @@ my-app/
 
 ---
 
-## 6. Pages your teammates can open
+## 7. Pages your teammates can open
 
 | URL | Who can see it | What happens |
 |-----|----------------|--------------|
 | `/` | Everyone | Modern home page (hero, matches, features, team) |
 | `/login` | Everyone | Log in form |
 | `/register` | Everyone | Create account form |
-| `/dashboard` | **Only logged-in users** | Welcome message; others sent to `/login` |
+| `/dashboard` | **Only logged-in users** | Sidebar + overview stat cards; others sent to `/login` |
 
 ### Dashboard protection
 
 `app/dashboard/page.tsx` asks Supabase: “Is there a logged-in user?”
 
-- **Yes** → show “Welcome to Jobmatcher dashboard”.
+- **Yes** → show **`DashboardApp`** (menu + cards).
 - **No** → redirect to `/login`.
 
 That is a basic **protected page** pattern we will reuse for real job data later.
 
 ---
 
-## 7. How sign-up and log-in work
+## 8. How sign-up and log-in work
 
 We use **Supabase Auth**. Supabase stores users (email, password hash, Google id). Our app talks to Supabase through code in `lib/supabase/`.
 
-### 7a. Email registration (manual)
+### 8a. Email registration (manual)
 
 1. User fills **full name**, **email**, **password**, **confirm password** on `/register`.
 2. `RegisterForm.tsx` sends JSON to **`POST /api/auth/register`**.
@@ -301,7 +421,7 @@ We use **Supabase Auth**. Supabase stores users (email, password hash, Google id
 
 **Why an API route?** Password is checked on the server. We do not put secret logic only in the browser.
 
-### 7b. Email log-in
+### 8b. Email log-in
 
 1. User enters email + password on `/login`.
 2. `LoginForm.tsx` → **`POST /api/auth/login`**.
@@ -309,7 +429,7 @@ We use **Supabase Auth**. Supabase stores users (email, password hash, Google id
 4. Supabase sets **cookies** (small files) so the browser “remembers” the user.
 5. Redirect to **`/dashboard`**.
 
-### 7c. Google (one click)
+### 8c. Google (one click)
 
 1. User clicks **Log in with Google** on login or register.
 2. `GoogleSignInButton.tsx` opens Google’s page (OAuth).
@@ -317,9 +437,9 @@ We use **Supabase Auth**. Supabase stores users (email, password hash, Google id
 4. `auth/callback/route.ts` trades that code for a session.
 5. User lands on **`/dashboard`**.
 
-**You must configure Google** in Supabase dashboard (see section 10).
+**You must configure Google** in Supabase dashboard (see section 11).
 
-### 7d. Log out
+### 8d. Log out
 
 1. User clicks **Log out** in the navbar.
 2. App calls **`POST /api/auth/logout`** and browser `signOut`.
@@ -327,7 +447,7 @@ We use **Supabase Auth**. Supabase stores users (email, password hash, Google id
 
 ---
 
-## 8. Why the menu updates without refresh
+## 9. Why the menu updates without refresh
 
 Early version: menu was built on the **server** once per page load. After log out, it still showed your name until F5.
 
@@ -344,7 +464,7 @@ When logged out: **Log in · Register**.
 
 ---
 
-## 9. API routes (for Postman and future dashboard)
+## 10. API routes (for Postman and future dashboard)
 
 All APIs start with **http://localhost:3000** when you run `npm run dev`.
 
@@ -376,7 +496,7 @@ Sends your text prompt to Google’s model. Only works when `GEMINI_API_KEY` is 
 
 ---
 
-## 10. What you must set up in Supabase
+## 11. What you must set up in Supabase
 
 1. Create a project at **supabase.com**.
 2. **Project Settings → API** → copy URL and **anon public** key into `.env.local`:
@@ -411,7 +531,7 @@ After editing `.env.local`, always **restart** `npm run dev`.
 
 ---
 
-## 11. Environment file (`.env.local`)
+## 12. Environment file (`.env.local`)
 
 | Variable | Used for |
 |----------|----------|
@@ -425,7 +545,7 @@ After editing `.env.local`, always **restart** `npm run dev`.
 
 ---
 
-## 12. Tech words we use (short glossary)
+## 13. Tech words we use (short glossary)
 
 | Word | Plain meaning |
 |------|----------------|
@@ -443,7 +563,7 @@ After editing `.env.local`, always **restart** `npm run dev`.
 
 ---
 
-## 13. How to run the project (every teammate)
+## 14. How to run the project (every teammate)
 
 ```powershell
 cd my-app
@@ -459,22 +579,23 @@ npm run dev
 
 ---
 
-## 14. Deploy on Vercel (summary)
+## 15. Deploy on Vercel (summary)
 
 1. Push code to GitHub.
 2. Vercel → New project → root folder **`my-app`**, preset **Next.js**.
 3. Add same env vars as `.env.local` in Vercel settings.
-4. Add production callback URL in Supabase (see section 10).
+4. Add production callback URL in Supabase (see section 11).
 
 ---
 
-## 15. What we implemented vs what is next
+## 16. What we implemented vs what is next
 
 ### Done ✅
 
 - Single Next.js app structure
 - Modern home page (dark blue / white / yellow, Framer Motion, `components/home/`) — see **section 2**
 - Home page loader (CV drop + match % while content appears) — **section 2, step 8**
+- Dashboard UI (sidebar, stat cards, demo menus) — **section 3**
 - Home page + SEO layout
 - Email register (full name, email, password, confirm)
 - Email login
@@ -495,7 +616,7 @@ npm run dev
 
 ---
 
-## 16. How to explain this in a presentation (2 minutes)
+## 17. How to explain this in a presentation (2 minutes)
 
 1. “We built **one Next.js app** — pages and APIs together.”
 2. “**Supabase** holds users and will hold job applications.”
@@ -505,7 +626,7 @@ npm run dev
 
 ---
 
-## 17. Questions teammates often ask
+## 18. Questions teammates often ask
 
 **Why do I only see Log in after I added Supabase in the browser?**  
 The **browser “connected”** feeling is not the same as keys in `.env.local`. The app needs `SUPABASE_URL` and `SUPABASE_ANON_KEY` on your machine.
@@ -521,7 +642,7 @@ Empty `.env.local`. Copy keys, restart `npm run dev`.
 
 ---
 
-## 18. Who to ask on the team
+## 19. Who to ask on the team
 
 Use this section in meetings:
 
@@ -535,7 +656,7 @@ Use this section in meetings:
 
 ---
 
-## 19. One sentence to remember
+## 20. One sentence to remember
 
 **Jobmatcher is a Next.js website where logged-in users will track jobs; Supabase stores users and data; we already ship login, Google, dashboard, and APIs — the dashboard list is the next brick to add.**
 
