@@ -7,10 +7,11 @@ import { KanbanCard } from "./KanbanCard";
 
 type KanbanDraggableCardProps = {
   card: KanbanCardData;
+  onView: (cardId: string) => void;
 };
 
 /** Makes one Kanban card draggable (used inside DndContext). */
-export function KanbanDraggableCard({ card }: KanbanDraggableCardProps) {
+export function KanbanDraggableCard({ card, onView }: KanbanDraggableCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: card.id,
     data: { card },
@@ -31,7 +32,7 @@ export function KanbanDraggableCard({ card }: KanbanDraggableCardProps) {
         {...listeners}
         {...attributes}
       >
-        <KanbanCard card={card} />
+        <KanbanCard card={card} onView={onView} />
       </div>
     </li>
   );

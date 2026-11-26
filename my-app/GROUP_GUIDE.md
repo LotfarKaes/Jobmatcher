@@ -388,6 +388,22 @@ When you drop a card, **`moveKanbanCard`** in `lib/dashboard/kanban-drag.ts` upd
 
 Cards are **in browser memory only** until you save to Supabase after `onDragEnd`.
 
+### Step 13 — View / edit / delete popup (per card)
+
+Each kanban card has a **View** button (does not start a drag).
+
+| Action | What happens |
+|--------|----------------|
+| **View** | Opens modal with **all fields** (same layout as Edit, read-only boxes) |
+| **Edit** | Form: stage, company, title, match %, description, footer |
+| **Save** | Updates React `board` state in `KanbanBoard.tsx` (moves column if stage changed) |
+| **Delete** | Removes card from board after confirm |
+
+**File:** `KanbanCardDetailModal.tsx`  
+**State:** `selection` in `KanbanBoard` = `{ cardId, stageId }`.
+
+Hook **Save** and **Delete** to `POST/PATCH/DELETE` API routes when the backend is ready.
+
 ---
 
 ## 4. One app, not two servers
