@@ -7,9 +7,10 @@ import { KanbanDraggableCard } from "./KanbanDraggableCard";
 type KanbanColumnProps = {
   column: KanbanColumnConfig;
   cards: KanbanCardData[];
+  onViewCard: (cardId: string) => void;
 };
 
-export function KanbanColumn({ column, cards }: KanbanColumnProps) {
+export function KanbanColumn({ column, cards, onViewCard }: KanbanColumnProps) {
   const count = cards.length;
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
 
@@ -55,7 +56,7 @@ export function KanbanColumn({ column, cards }: KanbanColumnProps) {
 
       <ul className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-3">
         {cards.map((card) => (
-          <KanbanDraggableCard key={card.id} card={card} />
+          <KanbanDraggableCard key={card.id} card={card} onView={onViewCard} />
         ))}
         {count === 0 ? (
           <li className="rounded-xl border border-dashed border-white/15 p-4 text-center text-xs text-white/35">

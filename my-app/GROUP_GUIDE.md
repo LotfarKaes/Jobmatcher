@@ -239,7 +239,7 @@ DashboardApp  (client)
 |---------|--------|-------------------|
 | `dashboard` | Job search | Search bar (demo) |
 | `job-search` | AI match | Saved roles deep match + 4 strips |
-| `kanban` | Kanban board | Telemetry header + 3 stat cards + 5-column pipeline |
+| `kanban` | Kanban board | 3 stat cards + 5-column pipeline |
 | `interview` | Interview prep | Placeholder |
 | `cv` | My CV | Placeholder |
 | `settings` | Settings | Placeholder |
@@ -387,6 +387,22 @@ When you drop a card, **`moveKanbanCard`** in `lib/dashboard/kanban-drag.ts` upd
 | `kanban-drag.ts` | Pure functions (easy to unit test) |
 
 Cards are **in browser memory only** until you save to Supabase after `onDragEnd`.
+
+### Step 13 — View / edit / delete popup (per card)
+
+Each kanban card has a **View** button (does not start a drag).
+
+| Action | What happens |
+|--------|----------------|
+| **View** | Opens modal with **all fields** (same layout as Edit, read-only boxes) |
+| **Edit** | Form: stage, company, title, match %, description, footer |
+| **Save** | Updates React `board` state in `KanbanBoard.tsx` (moves column if stage changed) |
+| **Delete** | Removes card from board after confirm |
+
+**File:** `KanbanCardDetailModal.tsx`  
+**State:** `selection` in `KanbanBoard` = `{ cardId, stageId }`.
+
+Hook **Save** and **Delete** to `POST/PATCH/DELETE` API routes when the backend is ready.
 
 ---
 
