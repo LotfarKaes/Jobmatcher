@@ -239,7 +239,7 @@ DashboardApp  (client)
 |---------|--------|-------------------|
 | `dashboard` | Job search | Search bar (demo) |
 | `job-search` | AI match | Saved roles deep match + 4 strips |
-| `kanban` | Kanban board | Telemetry header + 3 stat cards + 5-column pipeline |
+| `kanban` | Kanban board | 3 stat cards + 5-column pipeline |
 | `interview` | Interview prep | Placeholder |
 | `cv` | My CV | Placeholder |
 | `settings` | Settings | Placeholder |

@@ -28,8 +28,6 @@ export function DashboardApp({ userLabel }: DashboardAppProps) {
     [activeId],
   );
 
-  const showCommandHeader = activeId === "kanban";
-
   return (
     <div className="flex min-h-[calc(100vh-4.5rem)] flex-col lg:flex-row">
       <DashboardSidebar
@@ -42,8 +40,9 @@ export function DashboardApp({ userLabel }: DashboardAppProps) {
         Jobmatcher dashboard. Use the menu to switch sections. Data will connect to APIs later.
       </p>
       <div className="flex flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        {showCommandHeader ? <DashboardHeader /> : null}
-        {!showCommandHeader && activeId !== "dashboard" && activeId !== "job-search" ? (
+        {activeId !== "dashboard" &&
+        activeId !== "job-search" &&
+        activeId !== "kanban" ? (
           <DashboardHeader
             title={activeItem.label}
             subtitle={activeItem.description}
@@ -52,7 +51,13 @@ export function DashboardApp({ userLabel }: DashboardAppProps) {
             showExport={false}
           />
         ) : null}
-        <div className={showCommandHeader || activeId === "interview" || activeId === "cv" || activeId === "settings" ? "mt-8 flex-1" : "mt-2 flex-1 sm:mt-4"}>
+        <div
+          className={
+            activeId === "interview" || activeId === "cv" || activeId === "settings"
+              ? "mt-8 flex-1"
+              : "mt-2 flex-1 sm:mt-4"
+          }
+        >
           {activeId === "dashboard" && <DashboardJobSearchView />}
           {activeId === "job-search" && <DashboardAiMatchView />}
           {activeId === "kanban" && <DashboardKanbanView />}
